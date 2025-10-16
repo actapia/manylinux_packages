@@ -1,0 +1,14 @@
+diff -Naur ncbi-cxx-toolkit-public-release-29.6.0/src/build-system/cmake/CMake.NCBIptb.definitions.cmake ncbi-cxx-toolkit-public-release-29.6.0-new/src/build-system/cmake/CMake.NCBIptb.definitions.cmake
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/build-system/cmake/CMake.NCBIptb.definitions.cmake	2025-09-30 02:46:23.000000000 -0400
++++ ncbi-cxx-toolkit-public-release-29.6.0-new/src/build-system/cmake/CMake.NCBIptb.definitions.cmake	2025-10-12 21:08:03.609455308 -0400
+@@ -39,7 +39,9 @@
+ 
+ #############################################################################
+ set(NCBI_DIRNAME_RUNTIME bin)
+-set(NCBI_DIRNAME_ARCHIVE lib)
++if(NOT NCBI_DIRNAME_ARCHIVE)
++  set(NCBI_DIRNAME_ARCHIVE lib)
++endif()
+ if (WIN32)
+     set(NCBI_DIRNAME_SHARED ${NCBI_DIRNAME_RUNTIME})
+ else()
