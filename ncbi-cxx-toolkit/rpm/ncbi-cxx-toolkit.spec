@@ -21,6 +21,12 @@ Prefix: %{_prefix}
 Collection of bioinformatics libraries from the National Center for
 Biotechnology Information (NCBI).
 
+%ifarch x86_64 aarch64
+%global zcf_disabled 0
+%else
+%global zcf_disabled 1
+%endif
+
 
 %prep
 %autosetup -n %{name}-public-release-%{version} -p1
@@ -31,7 +37,7 @@ echo bindir %{_bindir}
 echo libdir %{_libdir}
 echo prefix %{_prefix}
 scl enable gcc-toolset-14 - <<EOF
-     bash cmake-configure --with-dll --with-install=%{_prefix} -DNCBI_DIRNAME_ARCHIVE=lib64;
+    bash cmake-configure --with-dll --with-install=%{_prefix} -DNCBI_DIRNAME_ARCHIVE=lib64 -DNCBI_COMPONENT_LocalZCF_DISABLED=%{zcf_disabled};
      cd CMake*/build;
      %make_build;
 EOF
@@ -1291,7 +1297,9 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_libdir}/libxunittestutil.so
 %{_libdir}/libxutil.so
 %{_libdir}/libxvalidate.so
+%if %{zcf_disabled} == 0
 %{_libdir}/libzcf.so
+%endif
 %{_libdir}/libz.so
 
 
