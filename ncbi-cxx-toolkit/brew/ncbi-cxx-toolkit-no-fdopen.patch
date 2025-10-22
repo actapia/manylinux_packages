@@ -1,0 +1,14 @@
+diff -aur --exclude=CMake-Clang1700-DebugDLL ncbi-cxx-toolkit-public-release-29.6.0/include/util/compress/zlib/zutil.h ncbi-cxx-toolkit-public-release-29.6.0_complete/include/util/compress/zlib/zutil.h
+--- ncbi-cxx-toolkit-public-release-29.6.0/include/util/compress/zlib/zutil.h	2025-10-22 05:20:35
++++ ncbi-cxx-toolkit-public-release-29.6.0_complete/include/util/compress/zlib/zutil.h	2025-10-21 22:04:17
+@@ -142,10 +142,6 @@
+ #  ifndef Z_SOLO
+ #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os
+ #      include <unix.h> /* for fdopen */
+-#    else
+-#      ifndef fdopen
+-#        define fdopen(fd,mode) NULL /* No fdopen() */
+-#      endif
+ #    endif
+ #  endif
+ #endif
