@@ -1,0 +1,433 @@
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/build-system/cmake/CMakeChecks.cmake rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/build-system/cmake/CMakeChecks.cmake
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/build-system/cmake/CMakeChecks.cmake	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/build-system/cmake/CMakeChecks.cmake	2025-10-22 02:17:03.511489955 +0000
+@@ -228,3 +228,46 @@
+ endif()
+ 
+ endif(NOT NCBI_PTBCFG_COLLECT_REQUIRES)
++
++# Make sure xncbi is built before certain libraries, depending on architecture,
++# OS, and compiler.
++# This code is adapted from configure.ac. It has not been tested
++# thoroughly. Some of these values are evidently for discontinued systems and
++# might not even be supported by NCBI at this point.
++message("Handling xncbi dependency issue.")
++if(("${HOST_OS}" MATCHES "SunOS" AND ("${CMAKE_SYSTEM_VERSION}" VERSION_GREATER "2.00" OR "${NCBI_COMPILER}" MATCHES "GCC")) OR
++   ("${NCBI_COMPILER}" MATCHES "Compaq") OR
++   ("${HOST_OS}" MATCHES "irix") OR
++   ("${HOST_OS}" MATCHES "AIX") OR
++   ("${HOST_OS}" MATCHES "Darwin") OR
++   ("${HOST_OS}" MATCHES "cygwin")
++)
++  set(NCBI_ATOMIC_LIB "")
++endif()
++if(("${NCBI_COMPILER}" MATCHES "GCC") OR
++   ("${NCBI_COMPILER}" MATCHES "ICC") OR
++   ("${NCBI_COMPILER}" MATCHES ".*_CLANG") OR
++  ("${NCBI_COMPILER}" MATCHES "KCC" AND "${HOST_OS}" MATCHES "linux.*"))
++    if(("${HOST_CPU}" MATCHES "i.86") OR
++       ("${HOST_CPU}" MATCHES "powerpc.*") OR
++       ("${HOST_CPU}" MATCHES "ppc.*") OR
++       ("${HOST_CPU}" MATCHES "x86_64") OR
++       ("${HOST_CPU}" MATCHES "sparc.*") OR
++       ("${HOST_CPU}" MATCHES "aarch64") OR
++      ("${HOST_CPU}" MATCHES "arm.*64.*") OR
++      ("${HOST_CPU}" MATCHES "AMD64") OR
++      ("${HOST_CPU}" MATCHES "ARM64") OR
++      ("${HOST_CPU}" MATCHES "X86"))
++      set(NCBI_ATOMIC_LIB "")
++    else()
++      set(NCBI_ATOMIC_LIB "xncbi")
++    endif()
++endif()
++
++if(NCBI_ATOMIC_LIB)
++    message("NCBI_ATOMIC_LIB set, ${NCBI_ATOMIC_LIB}")
++else()
++  message("NCBI_ATOMIC_LIB not set, ${NCBI_ATOMIC_LIB}")
++endif()
++  
++
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/CMakeLists.connect.lib.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/CMakeLists.connect.lib.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/CMakeLists.connect.lib.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/CMakeLists.connect.lib.txt	2025-10-22 02:45:40.282193084 +0000
+@@ -4,6 +4,7 @@
+   NCBI_sources(${SRC_C})
+   NCBI_headers(*.h)
+   NCBI_uses_external_libraries(${NETWORK_LIBS} ${ORIG_LIBS})
++  NCBI_uses_toolkit_libraries(${NCBI_ATOMIC_LIB})
+   NCBI_project_tags(core mod_loadinfo mod_caf)
+   NCBI_project_watchers(lavr)
+ NCBI_end_lib()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_dblb.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_dblb.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_dblb.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_dblb.app.txt	2025-10-22 02:21:39.931025712 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_dblb)
+   NCBI_sources(test_ncbi_dblb)
+-  NCBI_uses_toolkit_libraries(connext connssl)
++  NCBI_uses_toolkit_libraries(connext connssl ${NCBI_ATOMIC_LIB})
+   NCBI_begin_test(test_ncbi_dblb)
+     NCBI_set_test_command(test_ncbi_dblb.sh)
+     NCBI_set_test_requires(in-house-resources)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_ifconf.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_ifconf.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_ifconf.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_ifconf.app.txt	2025-10-22 02:22:26.561025712 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_ifconf)
+   NCBI_sources(test_ncbi_ifconf)
+   NCBI_requires(unix)
+-  NCBI_uses_toolkit_libraries(connext)
++  NCBI_uses_toolkit_libraries(connext ${NCBI_ATOMIC_LIB})
+   NCBI_project_watchers(lavr)
+   NCBI_add_test()
+ NCBI_end_app()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_localnet.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_localnet.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_localnet.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/ext/test/CMakeLists.test_ncbi_localnet.app.txt	2025-10-22 02:23:24.621025712 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_localnet)
+   NCBI_sources(test_ncbi_localnet)
+-  NCBI_uses_toolkit_libraries(connext connssl)
++  NCBI_uses_toolkit_libraries(connext connssl ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_localnet)
+     NCBI_set_test_command(test_ncbi_localnet.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.http_connector_hit.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.http_connector_hit.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.http_connector_hit.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.http_connector_hit.app.txt	2025-10-22 02:42:03.641701852 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(http_connector_hit)
+   NCBI_sources(http_connector_hit)
+-  NCBI_uses_toolkit_libraries(connssl)
++  NCBI_uses_toolkit_libraries(connssl ${NCBI_ATOMIC_LIB})
+   NCBI_begin_test(http_connector_hit)
+     NCBI_set_test_command(http_connector_hit www.ncbi.nlm.nih.gov 443 /Service/bounce.cgi 'arg1+arg2+arg3' + 'CAF-CHECK: YES!')
+   NCBI_end_test()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.socket_io_bouncer.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.socket_io_bouncer.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.socket_io_bouncer.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.socket_io_bouncer.app.txt	2025-10-22 02:42:44.551769677 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(socket_io_bouncer)
+   NCBI_sources(socket_io_bouncer)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+   NCBI_project_watchers(lavr)
+ NCBI_end_app()
+ 
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_conn_tar.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_conn_tar.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_conn_tar.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_conn_tar.app.txt	2025-10-22 02:33:58.160863665 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_conn_tar)
+ 
+   NCBI_sources(test_conn_tar)
+-  NCBI_uses_toolkit_libraries(xcompress xconnect)
++  NCBI_uses_toolkit_libraries(xcompress xconnect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_conn_tar)
+     NCBI_set_test_command(test_conn_tar.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_fw.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_fw.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_fw.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_fw.app.txt	2025-10-22 02:38:30.081059908 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_fw)
+   NCBI_sources(test_fw)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+   NCBI_project_watchers(lavr)
+ NCBI_end_app()
+ 
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_buffer.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_buffer.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_buffer.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_buffer.app.txt	2025-10-22 02:36:19.160863665 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_buffer)
+ 
+   NCBI_sources(test_ncbi_buffer)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_buffer)
+     NCBI_set_test_command(test_ncbi_buffer.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_connutil_hit.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_connutil_hit.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_connutil_hit.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_connutil_hit.app.txt	2025-10-22 02:43:36.771898643 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_connutil_hit)
+ 
+   NCBI_sources(test_ncbi_connutil_hit)
+-  NCBI_uses_toolkit_libraries(connssl)
++  NCBI_uses_toolkit_libraries(connssl ${NCBI_ATOMIC_LIB})
+   NCBI_set_test_assets(test_ncbi_connutil_hit.dat)
+ 
+   NCBI_begin_test(test_ncbi_connutil_hit)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_connutil_misc.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_connutil_misc.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_connutil_misc.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_connutil_misc.app.txt	2025-10-22 02:34:55.180863665 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_connutil_misc)
+   NCBI_sources(test_ncbi_connutil_misc)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+   NCBI_add_test()
+   NCBI_project_watchers(lavr)
+ NCBI_end_app()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_core.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_core.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_core.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_core.app.txt	2025-10-22 02:32:56.450863665 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_core)
+   NCBI_sources(test_ncbi_core)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+   NCBI_add_test()
+   NCBI_project_watchers(lavr)
+ NCBI_end_app()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_disp.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_disp.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_disp.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_disp.app.txt	2025-10-22 02:37:27.940843633 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_disp)
+   NCBI_sources(test_ncbi_disp)
+-  NCBI_uses_toolkit_libraries(connssl)
++  NCBI_uses_toolkit_libraries(connssl ${NCBI_ATOMIC_LIB})
+   NCBI_set_test_timeout(30)
+   NCBI_add_test()
+   NCBI_project_watchers(lavr)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_download.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_download.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_download.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_download.app.txt	2025-10-22 02:39:52.941318548 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_download)
+ 
+   NCBI_sources(test_ncbi_download)
+-  NCBI_uses_toolkit_libraries(xconnect)
++  NCBI_uses_toolkit_libraries(xconnect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_download)
+     NCBI_set_test_command(test_ncbi_download.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_dsock.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_dsock.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_dsock.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_dsock.app.txt	2025-10-22 02:38:46.441185689 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_dsock)
+ 
+   NCBI_sources(test_ncbi_dsock)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_dsock)
+     NCBI_set_test_command(test_ncbi_dsock.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_file_connector.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_file_connector.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_file_connector.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_file_connector.app.txt	2025-10-22 02:40:16.641367065 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_file_connector)
+ 
+   NCBI_sources(test_ncbi_file_connector)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_file_connector)
+     NCBI_set_test_command(test_ncbi_file_connector test_ncbi_file_connector.dat)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_ftp_connector.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_ftp_connector.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_ftp_connector.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_ftp_connector.app.txt	2025-10-22 02:37:11.270853647 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_ftp_connector)
+ 
+   NCBI_sources(test_ncbi_ftp_connector)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_ftp_connector)
+     NCBI_set_test_command(test_ncbi_ftp_connector.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_heapmgr.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_heapmgr.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_heapmgr.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_heapmgr.app.txt	2025-10-22 02:39:08.781185689 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_heapmgr)
+   NCBI_sources(test_ncbi_heapmgr)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+   NCBI_add_test()
+   NCBI_project_watchers(lavr)
+ NCBI_end_app()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_connector.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_connector.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_connector.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_connector.app.txt	2025-10-22 02:41:37.381587573 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_http_connector)
+   NCBI_sources(test_ncbi_http_connector ncbi_conntest)
+-  NCBI_uses_toolkit_libraries(connssl)
++  NCBI_uses_toolkit_libraries(connssl ${NCBI_ATOMIC_LIB})
+   NCBI_add_test()
+   NCBI_project_watchers(lavr)
+ NCBI_end_app()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_get.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_get.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_get.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_get.app.txt	2025-10-22 02:35:42.900863665 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_http_get)
+ 
+   NCBI_sources(test_ncbi_http_get)
+-  NCBI_uses_toolkit_libraries(connssl)
++  NCBI_uses_toolkit_libraries(connssl ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_http_get)
+     NCBI_set_test_command(test_ncbi_http_get.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_upload.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_upload.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_upload.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_http_upload.app.txt	2025-10-22 02:39:27.961234197 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_http_upload)
+ 
+   NCBI_sources(test_ncbi_http_upload)
+-  NCBI_uses_toolkit_libraries(xconnect)
++  NCBI_uses_toolkit_libraries(xconnect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_http_upload)
+     NCBI_set_test_command(test_ncbi_http_upload.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_iprange.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_iprange.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_iprange.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_iprange.app.txt	2025-10-22 02:40:33.451421427 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_iprange)
+ 
+   NCBI_sources(test_ncbi_iprange)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_iprange)
+     NCBI_set_test_command(test_ncbi_iprange 127.0.0.1 2607:F220:041E:4000::/52 130.14.29.128-255)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_ipv6.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_ipv6.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_ipv6.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_ipv6.app.txt	2025-10-22 02:43:55.281898643 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_ipv6)
+ 
+   NCBI_sources(test_ncbi_ipv6)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_ipv6)
+     NCBI_set_test_command(test_ncbi_ipv6 2607:F220:041E:4000::/52)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_linkerd.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_linkerd.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_linkerd.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_linkerd.app.txt	2025-10-22 02:42:59.931779639 +0000
+@@ -4,7 +4,7 @@
+ 
+   NCBI_sources(test_ncbi_linkerd)
+   NCBI_requires(unix)
+-  NCBI_uses_toolkit_libraries(connssl)
++  NCBI_uses_toolkit_libraries(connssl ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_linkerd)
+     NCBI_set_test_command(test_ncbi_linkerd.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_memory_connector.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_memory_connector.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_memory_connector.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_memory_connector.app.txt	2025-10-22 02:43:13.401898643 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_memory_connector)
+   NCBI_sources(test_ncbi_memory_connector ncbi_conntest)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+   NCBI_add_test()
+   NCBI_project_watchers(lavr)
+ NCBI_end_app()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_namerd.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_namerd.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_namerd.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_namerd.app.txt	2025-10-22 02:37:52.350944946 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_namerd)
+ 
+   NCBI_sources(test_ncbi_namerd)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_namerd)
+     NCBI_set_test_command(test_ncbi_namerd.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_sendmail.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_sendmail.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_sendmail.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_sendmail.app.txt	2025-10-22 02:42:32.001769677 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_sendmail)
+   NCBI_sources(test_ncbi_sendmail)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+   NCBI_add_test()
+   NCBI_project_watchers(lavr)
+ NCBI_end_app()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_server_info.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_server_info.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_server_info.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_server_info.app.txt	2025-10-22 02:42:18.841701852 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_server_info)
+ 
+   NCBI_sources(test_ncbi_server_info)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_server_info)
+     NCBI_set_test_command(test_ncbi_server_info.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_service.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_service.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_service.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_service.app.txt	2025-10-22 02:35:21.330863665 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_service)
+   NCBI_sources(test_ncbi_service)
+-  NCBI_uses_toolkit_libraries(connssl)
++  NCBI_uses_toolkit_libraries(connssl ${NCBI_ATOMIC_LIB})
+   NCBI_add_test(test_ncbi_service bounce)
+   NCBI_project_watchers(lavr)
+ NCBI_end_app()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_service_connector.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_service_connector.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_service_connector.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_service_connector.app.txt	2025-10-22 02:36:00.200863665 +0000
+@@ -2,7 +2,7 @@
+ 
+ NCBI_begin_app(test_ncbi_service_connector)
+   NCBI_sources(test_ncbi_service_connector)
+-  NCBI_uses_toolkit_libraries(connssl)
++  NCBI_uses_toolkit_libraries(connssl ${NCBI_ATOMIC_LIB})
+   NCBI_add_test()
+   NCBI_project_watchers(lavr)
+ NCBI_end_app()
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_socket.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_socket.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_socket.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_socket.app.txt	2025-10-22 02:33:21.380863665 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_socket)
+ 
+   NCBI_sources(test_ncbi_socket)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_socket)
+     NCBI_set_test_command(test_ncbi_socket.sh)
+diff -aur ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_socket_connector.app.txt rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_socket_connector.app.txt
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_socket_connector.app.txt	2025-09-30 06:46:23.000000000 +0000
++++ rpmbuild/BUILD/ncbi-cxx-toolkit-public-release-29.6.0/src/connect/test/CMakeLists.test_ncbi_socket_connector.app.txt	2025-10-22 02:38:13.361059908 +0000
+@@ -3,7 +3,7 @@
+ NCBI_begin_app(test_ncbi_socket_connector)
+ 
+   NCBI_sources(test_ncbi_socket_connector ncbi_conntest)
+-  NCBI_uses_toolkit_libraries(connect)
++  NCBI_uses_toolkit_libraries(connect ${NCBI_ATOMIC_LIB})
+ 
+   NCBI_begin_test(test_ncbi_socket_connector)
+     NCBI_set_test_command(test_ncbi_socket_connector.sh)

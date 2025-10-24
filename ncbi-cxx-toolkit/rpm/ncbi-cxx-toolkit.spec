@@ -9,6 +9,7 @@ Source0:        https://github.com/ncbi/ncbi-cxx-toolkit-public/archive/refs/tag
 
 Patch0:         ncbi-cxx-toolkit-parallel-cmake.patch
 Patch1:         ncbi-cxx-toolkit-custom-dirname-archive.patch
+Patch2:         ncbi-cxx-toolkit-cmake-atomic-lib.patch
 
 BuildRequires:  gcc-toolset-14-gcc, gcc-toolset-14-gcc-c++, gcc-toolset-14-libstdc++-devel, cmake, pcre-devel, bzip2-devel, zlib-devel, libzstd-devel, boost-devel, bash, sqlite-libs, sqlite-devel
 Requires:       pcre, bzip2, zstd, sqlite-libs
