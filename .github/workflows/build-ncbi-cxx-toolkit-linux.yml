@@ -10,8 +10,49 @@ on:
         default: false
 
 jobs:
+  build-srpm:
+    runs-on: x86_64
+    container: quay.io/pypa/manylinux_2_28_x86_64
+    # outputs:
+    #   srpm_name: ${{ steps.name_srpm.outputs.srpm_name }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install rpm build tools
+        run: dnf -y install rpm-build rpm-devel rpmdevtools
+
+      - name: Build rpm buildtree
+        working-directory: /github/home
+        run: rpmdev-setuptree
+
+      - name: Copy spec and patch files
+        run: |
+          cp ncbi-cxx-toolkit/rpm/*.spec /github/home/rpmbuild/SPECS
+          cp ncbi-cxx-toolkit/rpm/*.patch /github/home/rpmbuild/SOURCES
+
+      - name: Download source
+        run: spectool -g -R /github/home/rpmbuild/SPECS/ncbi-cxx-toolkit.spec
+
+      - name: Build SRPM
+        run: rpmbuild -bs /github/home/rpmbuild/SPECS/ncbi-cxx-toolkit.spec
+
+      # - id: name_srpm
+      #   working-directory: /github/home/rpmbuild/SRPMS        
+      #   run: echo "srpm_name="ncbi-cxx-toolkit*.src.rpm >> "$GITHUB_OUTPUT"
+
+      - name: Upload SRPM
+        uses: actions/upload-artifact@v4
+        with:
+          path: /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+      
   build-native:
     name: Build on native ${{matrix.architecture}} Linux platform
+    needs: [build-srpm]
     strategy:
       matrix:
         architecture: [x86_64, aarch64]
@@ -25,49 +66,32 @@ jobs:
     runs-on: ${{matrix.runner}}
     container: ${{matrix.container}}
     steps:
-      - uses: actions/checkout@v5
-
       - name: Install rpm build tools
         run: dnf -y install rpm-build rpm-devel rpmdevtools
 
       - name: Build rpm buildtree
         working-directory: /github/home
-        run: rpmdev-setuptree
+        run: rpmdev-setuptree        
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-
-      - name: Copy spec and patch files
-        run: |
-          cp ncbi-cxx-toolkit/rpm/*.spec /github/home/rpmbuild/SPECS
-          cp ncbi-cxx-toolkit/rpm/*.patch /github/home/rpmbuild/SOURCES
-
-      - name: Download source
-        run: spectool -g -R /github/home/rpmbuild/SPECS/ncbi-cxx-toolkit.spec
-
-      - name: Build SRPM
-        run: rpmbuild -bs /github/home/rpmbuild/SPECS/ncbi-cxx-toolkit.spec
-
-
-      - name: Upload SRPM
-        uses: actions/upload-artifact@v4
+      - name: Download SRPM
+        uses: actions/download-artifact@v5
         with:
-          path: /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
-          if-no-files-found: error
-          retention-days: 1
-          overwrite: true          
+          pattern: ncbi-cxx-toolkit*.src.rpm
+
+      - name: Copy SRPM to build tree
+        run: cp ncbi-cxx-toolkit*.src.rpm /github/home/rpmbuild/SRPMS/
 
       - name: Install build dependencies
-        run: dnf builddep /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+        run: dnf builddep -y /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
 
-      - name: Build binary RPM
+      - name: Build binary RPMs
         run: rpmbuild --rebuild /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
 
-      - name: Upload RPM
+      - name: Upload RPMs
         uses: actions/upload-artifact@v4
         with:
-          path: /github/home/rpmbuild/RPMS/ncbi-cxx-toolkit*.rpm
+          name: ${{matrix.architecture}}
+          path: /github/home/rpmbuild/RPMS/
           if-no-files-found: error
           retention-days: 1
           overwrite: true
