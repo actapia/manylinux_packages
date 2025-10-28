@@ -1,0 +1,62 @@
+name: build-ncbi-cxx-toolkit-linux
+
+on:
+  - workflow_dispatch
+
+jobs:
+  build-native:
+    name: Build on native ${{matrix.architecture}} Linux platform
+    strategy:
+      matrix:
+        architecture: [x86_64, aarch64]
+        include:
+          - architecture: x86_64
+            runner: ubuntu-latest
+            container: quay.io/pypa/manylinux_2_28_x86_64
+          - architecture: aarch64
+            runner: ubuntu-24.04-arm
+            container: quay.io/pypa/manylinux_2_28_aarch64
+    runs-on: ${{matrix.runner}}
+    container: ${{matrix.container}}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install rpm build tools
+        run: dnf install rpm-build rpm-devel rpmdevtools
+
+      - name: Build rpm buildtree
+        run: rpmdev-setuptree
+        working-directory: /root
+
+      - name: Copy spec and patch files
+        run: |
+          cp ncbi-cxx-toolkit/rpm/*.spec /root/rpmbuild/SPECS
+          cp ncbi-cxx-toolkit/rpm/*.patch /root/rpmbuild/SOURCES
+
+      - name: Download source
+        run: spectool -g -R /root/rpmbuild/SPECS/ncbi-cxx-toolkit.spec
+
+      - name: Build SRPM
+        run: rpmbuild -bs /root/rpmbuild/SPECS/ncbi-cxx-toolkit.spec
+
+      - name: Upload SRPM
+        uses: actions/upload-artifact@v4
+        with:
+          path: /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true          
+
+      - name: Install build dependencies
+        run: dnf builddep /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+
+      - name: Build binary RPM
+        run: rpmbuild --rebuild /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+
+      - name: Upload RPM
+        uses: actions/upload-artifact@v4
+        with:
+          path: /root/rpmbuild/RPMS/ncbi-cxx-toolkit*.rpm
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
