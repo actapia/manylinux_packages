@@ -44,6 +44,7 @@ jobs:
       - name: Upload SRPM
         uses: actions/upload-artifact@v4
         with:
+          name: srpm
           path: /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
           if-no-files-found: error
           retention-days: 1
@@ -76,7 +77,7 @@ jobs:
       - name: Download SRPM
         uses: actions/download-artifact@v5
         with:
-          pattern: ncbi-cxx-toolkit*.src.rpm
+          name: srpm
 
       - name: Copy SRPM to build tree
         run: cp ncbi-cxx-toolkit*.src.rpm /github/home/rpmbuild/SRPMS/
