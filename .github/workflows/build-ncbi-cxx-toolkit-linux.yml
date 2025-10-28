@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install rpm build tools
-        run: dnf install rpm-build rpm-devel rpmdevtools
+        run: dnf -y install rpm-build rpm-devel rpmdevtools
 
       - name: Build rpm buildtree
         run: rpmdev-setuptree
