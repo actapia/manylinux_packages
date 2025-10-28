@@ -31,7 +31,7 @@ jobs:
         run: dnf -y install rpm-build rpm-devel rpmdevtools
 
       - name: Build rpm buildtree
-        working-directory: /root        
+        working-directory: /github/home
         run: rpmdev-setuptree
 
       - name: Setup tmate session
@@ -40,34 +40,34 @@ jobs:
 
       - name: Copy spec and patch files
         run: |
-          cp ncbi-cxx-toolkit/rpm/*.spec /root/rpmbuild/SPECS
-          cp ncbi-cxx-toolkit/rpm/*.patch /root/rpmbuild/SOURCES
+          cp ncbi-cxx-toolkit/rpm/*.spec /github/home/rpmbuild/SPECS
+          cp ncbi-cxx-toolkit/rpm/*.patch /github/home/rpmbuild/SOURCES
 
       - name: Download source
-        run: spectool -g -R /root/rpmbuild/SPECS/ncbi-cxx-toolkit.spec
+        run: spectool -g -R /github/home/rpmbuild/SPECS/ncbi-cxx-toolkit.spec
 
       - name: Build SRPM
-        run: rpmbuild -bs /root/rpmbuild/SPECS/ncbi-cxx-toolkit.spec
+        run: rpmbuild -bs /github/home/rpmbuild/SPECS/ncbi-cxx-toolkit.spec
 
 
       - name: Upload SRPM
         uses: actions/upload-artifact@v4
         with:
-          path: /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+          path: /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
           if-no-files-found: error
           retention-days: 1
           overwrite: true          
 
       - name: Install build dependencies
-        run: dnf builddep /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+        run: dnf builddep /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
 
       - name: Build binary RPM
-        run: rpmbuild --rebuild /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+        run: rpmbuild --rebuild /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
 
       - name: Upload RPM
         uses: actions/upload-artifact@v4
         with:
-          path: /root/rpmbuild/RPMS/ncbi-cxx-toolkit*.rpm
+          path: /github/home/rpmbuild/RPMS/ncbi-cxx-toolkit*.rpm
           if-no-files-found: error
           retention-days: 1
           overwrite: true
