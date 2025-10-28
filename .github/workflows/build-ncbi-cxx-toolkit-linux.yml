@@ -2,7 +2,7 @@ name: build-ncbi-cxx-toolkit-linux
 
 on:
   workflow_dispatch:
-      inputs:
+    inputs:
       debug_enabled:
         type: boolean
         description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
