@@ -23,8 +23,8 @@ class BoostPythonCibuildwheel < Formula
 
   def install
     venv_loc = Pathname(Dir.home) / "cibuildwheel"
-    system "/usr/local/opt/python@3.13/bin/python3.13", "-m", "venv", \
-           venv_loc.to_str
+    system (Formula["python@3.13"].opt_bin / "python3.13").to_str, "-m", \
+           "venv", venv_loc.to_str
     venv_python = venv_loc / "bin/python"
     system venv_python.to_str, "-m", "pip", "install", "cibuildwheel"
     venv_lib = venv_loc / "lib"
