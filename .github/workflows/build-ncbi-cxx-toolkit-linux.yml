@@ -143,8 +143,8 @@ jobs:
         
       - name: Move SRPM to rpm buildtree
         run: >-
-          docker exec ${{env.container_id}} mv ncbi-cxx-toolkit*.src.rpm
-          rpmbuild/SRPMS/
+          docker exec -w /root ${{env.container_id}} sh -c
+          'mv ncbi-cxx-toolkit*.src.rpm rpmbuild/SRPMS/'
           
       - name: Install build dependencies
         run: >
