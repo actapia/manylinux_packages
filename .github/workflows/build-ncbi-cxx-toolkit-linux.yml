@@ -148,13 +148,13 @@ jobs:
           
       - name: Install build dependencies
         run: >
-          docker exec ${{env.container_id}} dnf builddep -y 
-          /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+          docker exec ${{env.container_id}} sh -c
+          'dnf builddep -y  /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm'
 
       - name: Build binary RPMs
         run: >
-          docker exec ${{env.container_id}}rpmbuild --rebuild
-          /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+          docker exec ${{env.container_id}} sh -c
+          'rpmbuild --rebuild /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm'
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
