@@ -154,7 +154,7 @@ jobs:
       - name: Build binary RPMs
         run: >
           docker exec ${{env.container_id}}rpmbuild --rebuild
-          /root/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+          /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
