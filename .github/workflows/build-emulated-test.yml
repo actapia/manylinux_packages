@@ -27,7 +27,8 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: [${{matrix.architecture}}]
+          platforms:
+            - ${{matrix.architecture}}
 
       - name: Start docker container
         run: docker run -di ${{matrix.container}}
