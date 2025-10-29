@@ -100,7 +100,7 @@ jobs:
     needs: [build-srpm]
     strategy:
       matrix:
-        architecture: [ppc64le]
+        architecture: [ppc64le, s390x, i386]
         include:
           - architecture: ppc64le
             binfmt_arch: ppc64le
@@ -131,7 +131,7 @@ jobs:
           rpmdevtools
 
       - name: Build rpm buildtree
-        run: docker exec ${{env.container_id}} -w /root rpmdev-setuptree        
+        run: docker exec -w /root ${{env.container_id}} rpmdev-setuptree        
 
       - name: Download SRPM
         uses: actions/download-artifact@v5
