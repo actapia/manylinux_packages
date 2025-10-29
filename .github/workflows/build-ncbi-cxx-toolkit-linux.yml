@@ -119,11 +119,11 @@ jobs:
           platforms: ${{matrix.binfmt_arch}}
 
       - name: Make output directory
-        run: mkdir "$HOME/emulated-out"
+        run: mkdir "emulated-out"
 
       - name: Start docker container
         run: |
-          echo container_id="$(docker run -di -v "$HOME/emulated-out:/root" ${{matrix.container}})" >> "$GITHUB_ENV"
+          echo container_id="$(docker run -di -v "$PWD/emulated-out:/root" ${{matrix.container}})" >> "$GITHUB_ENV"
 
       - name: Install rpm build tools
         run: >
@@ -137,7 +137,7 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: srpm
-          path: ${{runner.home}}/emulated-out/rpmbuild/SRPMS
+          path: emulated-out/rpmbuild/SRPMS
 
       - name: Install build dependencies
         run: >
@@ -153,7 +153,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.architecture}}
-          path: ${{runner.home}}/rpmbuild/RPMS/
+          path: emulated-out/rpmbuild/RPMS/
           if-no-files-found: error
           retention-days: 1
           overwrite: true
