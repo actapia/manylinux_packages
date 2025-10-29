@@ -97,6 +97,7 @@ jobs:
 
   build-emulated:
     name: Build on emulated ${{matrix.architecture}} Linux platform
+    needs: [build-srpm]
     strategy:
       matrix:
         architecture: [ppc64le]
