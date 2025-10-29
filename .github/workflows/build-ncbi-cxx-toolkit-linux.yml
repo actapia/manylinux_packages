@@ -138,9 +138,14 @@ jobs:
         with:
           name: srpm
 
-      - name: Copy SRPM to rpmbuild tree
-        run: cp ncbi-cxx-toolkit*.src.rpm emulated-out/rpmbuild/RPMS
-
+      - name: Move SRPM to container
+        run: mv ncbi-cxx-toolkit*.src.rpm emulated-out/
+        
+      - name: Move SRPM to rpm buildtree
+        run: >-
+          docker exec ${{env.container_id}} mv ncbi-cxx-toolkit*.src.rpm
+          rpmbuild/SRPMS/
+          
       - name: Install build dependencies
         run: >
           docker exec ${{env.container_id}} dnf builddep -y 
