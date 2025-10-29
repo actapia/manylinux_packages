@@ -13,8 +13,6 @@ jobs:
   build-srpm:
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64
-    # outputs:
-    #   srpm_name: ${{ steps.name_srpm.outputs.srpm_name }}
 
     steps:
       - uses: actions/checkout@v5
@@ -93,6 +91,68 @@ jobs:
         with:
           name: ${{matrix.architecture}}
           path: /github/home/rpmbuild/RPMS/
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+  build-emulated:
+    name: Build on emulated ${{matrix.architecture}} Linux platform
+    strategy:
+      matrix:
+        architecture: [ppc64le]
+        include:
+          - architecture: ppc64le
+            binfmt_arch: ppc64le
+            container: quay.io/pypa/manylinux_2_28_ppc64le
+          - architecutre: s390x
+            binfmt_arch: s390x
+            container: quay.io/pypa/manylinux_2_28_s390x
+          - architecutre: i386
+            binfmt_arch: 386
+            container: quay.io/pypa/manylinux_2_28_i686
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: ${{matrix.binfmt_arch}}
+
+      - name: Make output directory
+        run: mkdir "$HOME/emulated-out"
+
+      - name: Start docker container
+        run: |
+          echo container_id="$(docker run -di -v "$HOME/emulated-out:/root" ${{matrix.container}})" >> "$GITHUB_ENV"
+
+      - name: Install rpm build tools
+        run: >
+          docker exec ${{env.container_id}} dnf -y install rpm-build rpm-devel
+          rpmdevtools
+
+      - name: Build rpm buildtree
+        run: docker exec ${{env.container_id}} -w /root rpmdev-setuptree        
+
+      - name: Download SRPM
+        uses: actions/download-artifact@v5
+        with:
+          name: srpm
+          path: ${{runner.home}}/emulated-out/rpmbuild/SRPMS
+
+      - name: Install build dependencies
+        run: >
+          docker exec ${{env.container_id}} dnf builddep -y 
+          /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+
+      - name: Build binary RPMs
+        run: >
+          docker exec ${{env.container_id}}rpmbuild --rebuild
+          /root/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
+
+      - name: Upload RPMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{matrix.architecture}}
+          path: ${{runner.home}}/rpmbuild/RPMS/
           if-no-files-found: error
           retention-days: 1
           overwrite: true
