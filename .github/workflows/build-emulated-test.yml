@@ -33,7 +33,11 @@ jobs:
         run: mkdir "$HOME/emulated-out"
 
       - name: Start docker container
-        run: docker run -di -v "$HOME/emulated-out:/root" ${{matrix.container}} 
+        run: |
+          echo container_id="$(docker run -di -v "$HOME/emulated-out:/root" ${{matrix.container}})" >> "$GITHUB_ENV"
+
+      - name: Run uname -m in container
+        run: docker exec -it ${{env.container_id}} uname -m
         
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
