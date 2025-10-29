@@ -137,7 +137,9 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: srpm
-          path: emulated-out/rpmbuild/SRPMS
+
+      - name: Copy SRPM to rpmbuild tree
+        run: cp ncbi-cxx-toolkit*.src.rpm emulated-out/rpmbuild/RPMS
 
       - name: Install build dependencies
         run: >
