@@ -14,9 +14,9 @@ jobs:
     name: Build on emulated ${{matrix.architecture}} Linux platform
     strategy:
       matrix:
-        architecture: [ppc64]
+        architecture: [ppc64le]
         include:
-          - architecture: ppc64
+          - architecture: ppc64le
             container: quay.io/pypa/manylinux_2_28_ppc64le
           # - architecutre: s390x
           #   container: quay.io/pypa/manylinux_2_28_s390x
