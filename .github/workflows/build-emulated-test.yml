@@ -34,7 +34,7 @@ jobs:
 
       - name: Start docker container
         run: |
-          echo container_id="$(docker run -di -v "$HOME/emulated-out:/root" ${{matrix.container}})" >> "$GITHUB_ENV"
+          echo container_id="$(docker run -di --mount "type=bind,src=$HOME/emulated-out,dst=/root" ${{matrix.container}})" >> "$GITHUB_ENV"
 
       - name: Run uname -m in container
         run: docker exec ${{env.container_id}} uname -m
