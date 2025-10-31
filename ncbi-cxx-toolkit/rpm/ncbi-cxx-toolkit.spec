@@ -13,6 +13,16 @@ Patch2:         ncbi-cxx-toolkit-cmake-atomic-lib.patch
 Patch3:         ncbi-cxx-toolkit-32bit-f_type.patch
 
 BuildRequires:  gcc-toolset-14-gcc, gcc-toolset-14-gcc-c++, gcc-toolset-14-libstdc++-devel, cmake, pcre-devel, bzip2-devel, zlib-devel, libzstd-devel, boost-devel, bash, sqlite-libs, sqlite-devel
+
+# For cross-compilation.
+%if %{defined cmake_toolchain}
+%global toolchain_arg "-DCMAKE_TOOLCHAIN_FILE=%{cmake_toolchain} --with-build-root=CMakeCrossBuild"
+# Native package is required for cross-building.
+BuildRequires:  ncbi-cxx-toolkit
+%else
+%global toolchain_arg ""
+%endif
+
 Requires:       pcre, bzip2, zstd, sqlite-libs
 
 %define _prefix /opt/ncbi-cxx-toolkit-%{version}
@@ -30,6 +40,7 @@ Biotechnology Information (NCBI).
 %endif
 
 
+
 %prep
 %autosetup -n %{name}-public-release-%{version} -p1
 
@@ -38,8 +49,10 @@ Biotechnology Information (NCBI).
 echo bindir %{_bindir}
 echo libdir %{_libdir}
 echo prefix %{_prefix}
+echo toolchain_arg %{toolchain_arg}
+echo zcf_disabled %{zcf_disabled}
 scl enable gcc-toolset-14 - <<EOF
-    bash cmake-configure --with-dll --with-install=%{_prefix} -DNCBI_DIRNAME_ARCHIVE=lib64 -DNCBI_COMPONENT_LocalZCF_DISABLED=%{zcf_disabled};
+    bash cmake-configure --with-dll --with-install=%{_prefix} -DNCBI_DIRNAME_ARCHIVE=lib64 -DNCBI_COMPONENT_LocalZCF_DISABLED=%{zcf_disabled} %{toolchain_arg};
      cd CMake*/build;
      %make_build;
 EOF
