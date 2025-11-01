@@ -89,7 +89,7 @@ jobs:
         run: dnf -y builddep /github/home/rpmbuild/SRPMS/*.src.rpm
 
       - name: Build binary RPM
-        run: rpmbuild --rebuild /github/home/rpmbuild/SRPMS/*.src.cp --define "build_"${{matrix.build_name}}" 1"
+        run: rpmbuild --rebuild /github/home/rpmbuild/SRPMS/*.src.rpm --define "build_"${{matrix.build_name}}" 1"
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
