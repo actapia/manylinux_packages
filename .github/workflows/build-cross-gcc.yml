@@ -58,9 +58,9 @@ jobs:
         include:
           - architecture: ppc64le
             build_name: powerpc64le
-          - architecutre: s390x
+          - architecture: s390x
             build_name: s390x
-          - architecutre: i386
+          - architecture: i386
             build_name: x86_64
     steps:
       - name: Install DNF plugins
