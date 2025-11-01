@@ -30,7 +30,7 @@
 %global build_s390x		%{?build_s390x}%{!?build_s390x:%{build_all}}
 %global build_sh		%{?build_sh}%{!?build_sh:%{build_all}}
 %global build_sparc64		%{?build_sparc64}%{!?build_sparc64:%{build_all}}
-%global build_x86_64		%{?build_x86}%{!?build_x86:%{build_all}}
+%global build_x86_64		%{?build_x86_64}%{!?build_x86_64:%{build_all}}
 %global build_xtensa		%{?build_xtensa}%{!?build_xtensa:%{build_all}}
 
 # built compiler generates lots of ICEs
