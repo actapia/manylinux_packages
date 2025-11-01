@@ -86,7 +86,7 @@ jobs:
           path: /github/home/rpmbuild/SRPMS
 
       - name: Install build dependencies
-        run: dnf builddep /github/home/rpmbuild/SRPMS/*.src.rpm
+        run: dnf -y builddep /github/home/rpmbuild/SRPMS/*.src.rpm
 
       - name: Build binary RPM
         run: rpmbuild --rebuild /github/home/rpmbuild/SRPMS/*.src.cp --define "build_"${{matrix.build_name}}" 1"
