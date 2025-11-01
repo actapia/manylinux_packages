@@ -12,18 +12,21 @@ Patch1:         ncbi-cxx-toolkit-custom-dirname-archive.patch
 Patch2:         ncbi-cxx-toolkit-cmake-atomic-lib.patch
 Patch3:         ncbi-cxx-toolkit-32bit-f_type.patch
 
-BuildRequires:  gcc-toolset-14-gcc, gcc-toolset-14-gcc-c++, gcc-toolset-14-libstdc++-devel, cmake, pcre-devel, bzip2-devel, zlib-devel, libzstd-devel, boost-devel, bash, sqlite-libs, sqlite-devel
+AutoReqProv: no
+
+BuildRequires:  cmake, bash
 
 # For cross-compilation.
 %if %{defined cmake_toolchain}
 %global toolchain_arg "-DCMAKE_TOOLCHAIN_FILE=%{cmake_toolchain} --with-build-root=CMakeCrossBuild"
 # Native package is required for cross-building.
-BuildRequires:  ncbi-cxx-toolkit
+BuildRequires:  ncbi-cxx-toolkit, cross-gcc-common
 %else
 %global toolchain_arg ""
+BuildRequires:  gcc-toolset-14-gcc, gcc-toolset-14-gcc-c++, gcc-toolset-14-libstdc++-devel, pcre-devel, bzip2-devel, zlib-devel, libzstd-devel, boost-devel, sqlite-libs, sqlite-devel
 %endif
 
-Requires:       pcre, bzip2, zstd, sqlite-libs
+Requires:       pcre, bzip2, bzip2-libs, zstd, sqlite-libs, glibc, libgcc, libgomp, libstdc++, libzstd, zlib
 
 %define _prefix /opt/ncbi-cxx-toolkit-%{version}
 
@@ -39,8 +42,6 @@ Biotechnology Information (NCBI).
 %global zcf_disabled 1
 %endif
 
-
-
 %prep
 %autosetup -n %{name}-public-release-%{version} -p1
 
@@ -52,7 +53,7 @@ echo prefix %{_prefix}
 echo toolchain_arg %{toolchain_arg}
 echo zcf_disabled %{zcf_disabled}
 scl enable gcc-toolset-14 - <<EOF
-    bash cmake-configure --with-dll --with-install=%{_prefix} -DNCBI_DIRNAME_ARCHIVE=lib64 -DNCBI_COMPONENT_LocalZCF_DISABLED=%{zcf_disabled} %{toolchain_arg};
+    bash cmake-configure --with-dll --with-install=%{_prefix} -DNCBI_DIRNAME_ARCHIVE=%{_lib} -DNCBI_COMPONENT_LocalZCF_DISABLED=%{zcf_disabled} %{toolchain_arg};
      cd CMake*/build;
      %make_build;
 EOF
@@ -62,7 +63,7 @@ EOF
 rm -rf $RPM_BUILD_ROOT
 cd CMake*/build
 install -D ../bin/* -t %{buildroot}/%{_bindir}
-install -D ../lib64/* -t %{buildroot}/%{_libdir}
+install -D ../%{_lib}/* -t %{buildroot}/%{_libdir}
 mkdir -p %{buildroot}/%{_includedir}/ncbi-tools++/
 cp -r ../inc/* %{buildroot}/%{_includedir}/ncbi-tools++/
 cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%{_includedir}/ncbi-tools++/
