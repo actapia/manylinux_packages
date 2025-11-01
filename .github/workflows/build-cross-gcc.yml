@@ -64,7 +64,7 @@ jobs:
             build_name: x86_64
     steps:
       - name: Install rpm build tools
-        run: dnf -y install rpm-build rpm-devel rpmdevtools git
+        run: dnf -y install rpm-build rpm-devel rpmdevtools git 'dnf-command(builddep)'
 
       - name: Build rpm buildtree
         working-directory: /github/home
