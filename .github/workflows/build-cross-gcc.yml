@@ -63,6 +63,9 @@ jobs:
           - architecutre: i386
             build_name: x86_64
     steps:
+      - name: Install DNF plugins
+        run: dnf install dnf-plugins-core
+        
       - name: Enable powertools
         run: dnf config-manager --set-enabled powertools
 
