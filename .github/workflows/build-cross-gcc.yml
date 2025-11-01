@@ -63,6 +63,12 @@ jobs:
           - architecutre: i386
             build_name: x86_64
     steps:
+      - name: Enable powertools
+        run: dnf config-manager --set-enabled powertools
+
+      - name: Install EPEL
+        run: dnf install epel-release
+        
       - name: Install rpm build tools
         run: dnf -y install rpm-build rpm-devel rpmdevtools git 'dnf-command(builddep)'
 
