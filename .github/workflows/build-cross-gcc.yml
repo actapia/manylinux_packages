@@ -88,6 +88,10 @@ jobs:
       - name: Install build dependencies
         run: dnf -y builddep /github/home/rpmbuild/SRPMS/*.src.rpm
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}      
+
       - name: Build binary RPM
         run: rpmbuild --rebuild /github/home/rpmbuild/SRPMS/*.src.rpm --define "build_${{matrix.build_name}} 1"
 
