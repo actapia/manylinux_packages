@@ -1,0 +1,31 @@
+diff --git gcc/config/m68k/m68k.cc gcc/config/m68k/m68k.cc
+index 03db2b6a936..090b6468127 100644
+--- gcc/config/m68k/m68k.cc
++++ gcc/config/m68k/m68k.cc
+@@ -4992,7 +4992,7 @@ print_operand (FILE *file, rtx op, int letter)
+   else if (letter == '/')
+     asm_fprintf (file, "%R");
+   else if (letter == '?')
+-    asm_fprintf (file, m68k_library_id_string);
++    asm_fprintf (file, "%s", m68k_library_id_string);  
+   else if (letter == 'p')
+     {
+       output_addr_const (file, op);
+diff --git gcc/config/s390/s390.cc gcc/config/s390/s390.cc
+index 505de995da8..42f972f28d7 100644
+--- gcc/config/s390/s390.cc
++++ gcc/config/s390/s390.cc
+@@ -8149,11 +8149,11 @@ print_operand (FILE *file, rtx x, int code)
+ 	}
+       return;
+     case 'C':
+-      fprintf (file, s390_branch_condition_mnemonic (x, FALSE));
++      fprintf (file, "%s", s390_branch_condition_mnemonic (x, FALSE));
+       return;
+ 
+     case 'D':
+-      fprintf (file, s390_branch_condition_mnemonic (x, TRUE));
++      fprintf (file, "%s", s390_branch_condition_mnemonic (x, TRUE));
+       return;
+ 
+     case 'E':

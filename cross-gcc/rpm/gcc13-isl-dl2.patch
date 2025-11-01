@@ -1,0 +1,68 @@
+diff --git gcc/graphite.cc gcc/graphite.cc
+index 8338f7d139a..66800abd587 100644
+--- gcc/graphite.cc
++++ gcc/graphite.cc
+@@ -65,11 +65,39 @@ __typeof (isl_pointers__) isl_pointers__;
+ static bool
+ init_isl_pointers (void)
+ {
+-  void *h;
++  void *h = NULL;
++  extern const char **toplev_main_argv;
++  char *buf, *p;
++  size_t len;
+ 
+   if (isl_pointers__.inited)
+     return isl_pointers__.h != NULL;
+-  h = dlopen ("libisl.so.15", RTLD_LAZY);
++  len = progname - toplev_main_argv[0];
++  buf = XALLOCAVAR (char, len + sizeof "libisl.so.15");
++  memcpy (buf, toplev_main_argv[0], len);
++  strcpy (buf + len, "libisl.so.15");
++  len += sizeof "libisl.so.15";
++  p = strstr (buf, "/libexec/");
++  if (p != NULL)
++    {
++      while (1)
++	{
++	  char *q = strstr (p + 8, "/libexec/");
++	  if (q == NULL)
++	    break;
++	  p = q;
++	}
++      memmove (p + 4, p + 8, len - (p + 8 - buf));
++      h = dlopen (buf, RTLD_LAZY);
++      if (h == NULL)
++	{
++	  len = progname - toplev_main_argv[0];
++	  memcpy (buf, toplev_main_argv[0], len);
++	  strcpy (buf + len, "libisl.so.15");
++	}
++    }
++  if (h == NULL)
++    h = dlopen (buf, RTLD_LAZY);
+   isl_pointers__.h = h;
+   if (h == NULL)
+     return false;
+diff --git gcc/toplev.cc gcc/toplev.cc
+index 6c68a5efa02..3998f7608b7 100644
+--- gcc/toplev.cc
++++ gcc/toplev.cc
+@@ -105,6 +105,8 @@ static void finalize (bool);
+ static void crash_signal (int) ATTRIBUTE_NORETURN;
+ static void compile_file (void);
+ 
++const char **toplev_main_argv;
++
+ /* Decoded options, and number of such options.  */
+ struct cl_decoded_option *save_decoded_options;
+ unsigned int save_decoded_options_count;
+@@ -2206,6 +2208,8 @@ toplev::main (int argc, char **argv)
+ 
+   expandargv (&argc, &argv);
+ 
++  toplev_main_argv = CONST_CAST2 (const char **, char **, argv);
++
+   /* Initialization of GCC's environment, and diagnostics.  */
+   general_init (argv[0], m_init_signals);
+ 
