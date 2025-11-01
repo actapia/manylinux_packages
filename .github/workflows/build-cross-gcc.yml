@@ -86,7 +86,9 @@ jobs:
           path: /github/home/rpmbuild/SRPMS
 
       - name: Install build dependencies
-        run: dnf -y builddep /github/home/rpmbuild/SRPMS/*.src.rpm
+        run: |
+          dnf -y builddep /github/home/rpmbuild/SRPMS/*.src.rpm
+          dnf -y install "binutils-${{matrix.build_name}}-linux-gnu"
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
