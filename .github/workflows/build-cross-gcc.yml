@@ -30,7 +30,7 @@ jobs:
           cp cross-gcc/rpm/*.patch /github/home/rpmbuild/SOURCES
 
       - name: Download source
-        run: bash make_archive.sh /github/home/rpmbuild/SPECS/cross-gcc.spec
+        run: bash cross-gcc/rpm/make_archive.sh /github/home/rpmbuild/SPECS/cross-gcc.spec
 
       - name: Move source
         run: mv gcc*.tar.xz /github/home/rpmbuild/SOURCES/
