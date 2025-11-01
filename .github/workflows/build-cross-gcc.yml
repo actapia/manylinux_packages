@@ -64,13 +64,13 @@ jobs:
             build_name: x86_64
     steps:
       - name: Install DNF plugins
-        run: dnf install dnf-plugins-core
+        run: dnf -y install dnf-plugins-core
         
       - name: Enable powertools
         run: dnf config-manager --set-enabled powertools
 
       - name: Install EPEL
-        run: dnf install epel-release
+        run: dnf -y install epel-release
         
       - name: Install rpm build tools
         run: dnf -y install rpm-build rpm-devel rpmdevtools git 'dnf-command(builddep)'
