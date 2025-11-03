@@ -9,6 +9,12 @@ on:
         required: false
         default: false
 
+      download:
+        type: boolean
+        description: "Download to RPM repo"
+        required: false
+        default: true
+
 env:
   KEY_NAME: "Andrew Tapia"
   KEY_EMAIL: "andrew.tapia@uky.edu"
@@ -57,6 +63,7 @@ jobs:
           --addsign /github/home/rpmbuild/SRPMS/cross-gcc*.src.rpm
 
       - name: Upload SRPM
+        id: artifact-upload
         uses: actions/upload-artifact@v4
         with:
           name: gcc-srpm
@@ -64,7 +71,14 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           overwrite: true
-
+          
+      - name: Download to RPM repo
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+        run: >
+          culr -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          https://www.cs.uky.edu/~acta225/ci_get/get.php
+          -d "repo=${{github.repository}}"
+          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"
 
   build-binary:
     runs-on: ubuntu-latest
@@ -92,8 +106,8 @@ jobs:
         
       - name: Install rpm build tools
         run: >
-          dnf -y install rpm-build rpm-devel rpmdevtools git 'dnf-command(builddep)'
-          rpm-sign
+          dnf -y install rpm-build rpm-devel rpmdevtools git
+          'dnf-command(builddep)' rpm-sign
 
       - name: Add GPG key
         run: echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import
@@ -124,7 +138,9 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}      
 
       - name: Build binary RPM
-        run: rpmbuild --rebuild /github/home/rpmbuild/SRPMS/*.src.rpm --define "build_${{matrix.build_name}} 1"
+        run: >
+          rpmbuild --rebuild /github/home/rpmbuild/SRPMS/*.src.rpm --define
+          "build_${{matrix.build_name}} 1"
 
       - name: Sign SRPM
         run: >
@@ -133,6 +149,7 @@ jobs:
           --addsign {} \;
 
       - name: Upload RPMs
+        id: artifact-upload
         uses: actions/upload-artifact@v4
         with:
           name: gcc-${{matrix.architecture}}
@@ -141,5 +158,10 @@ jobs:
           retention-days: 1
           overwrite: true
 
-        
-          
+      - name: Download to RPM repo
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}  
+        run: >
+          culr -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          https://www.cs.uky.edu/~acta225/ci_get/get.php
+          -d "repo=${{github.repository}}"
+          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"
