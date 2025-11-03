@@ -75,7 +75,7 @@ jobs:
       - name: Download to RPM repo
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
         run: >
-          curl -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          curl --fail-with-body -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
           https://www.cs.uky.edu/~acta225/ci_get/get.php
           -d "repo=${{github.repository}}"
           -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"
@@ -161,7 +161,7 @@ jobs:
       - name: Download to RPM repo
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}  
         run: >
-          curl -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          curl --fail-with-body -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
           https://www.cs.uky.edu/~acta225/ci_get/get.php
           -d "repo=${{github.repository}}"
           -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"
