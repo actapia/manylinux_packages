@@ -54,7 +54,7 @@ jobs:
       - name: Sign SRPM
         run: >
           rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
-          /github/home/rpmbuild/SRPMS/cross-gcc*.src.rpm
+          --addsign /github/home/rpmbuild/SRPMS/cross-gcc*.src.rpm
 
       - name: Upload SRPM
         uses: actions/upload-artifact@v4
@@ -130,7 +130,7 @@ jobs:
         run: >
           find /github/home/rpmbuild/RPMS/ -name '*.rpm' -exec
           rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
-          {} \;
+          --addsign {} \;
 
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
