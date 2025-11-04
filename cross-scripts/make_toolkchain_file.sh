@@ -28,8 +28,8 @@ system_version="$(uname -r)"
 if [ -z "$arch" ]; then
     arch="$(uname -m)"
 fi
-if [ -z "$processor" ]; then
-    processor="$arch"
+if [ -z "$proc" ]; then
+    proc="$arch"
 fi
 gcc_version="$(gcc -dumpversion)"
 gcc_root="$(realpath "$(dirname "$(which gcc)")/../..")"
@@ -40,7 +40,7 @@ cxx_standard_libraries="$(bash get_flags.sh -f command -L -l c++ "$prefix")"
 cat << EOF
 set(CMAKE_SYSTEM_NAME $system_name)
 set(CMAKE_SYSTEM_VERSION $system_version)
-set(CMAKE_SYSTEM_PROCESSOR $processor)
+set(CMAKE_SYSTEM_PROCESSOR $proc)
 
 set(CMAKE_C_COMPILER $arch-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER $arch-linux-gnu-g++)
