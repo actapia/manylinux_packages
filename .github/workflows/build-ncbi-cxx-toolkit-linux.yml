@@ -9,6 +9,10 @@ on:
         required: false
         default: false
 
+env:
+  KEY_NAME: "Andrew Tapia"
+  KEY_EMAIL: "andrew.tapia@uky.edu"        
+
 jobs:
   build-srpm:
     runs-on: ubuntu-latest
@@ -18,7 +22,16 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Install rpm build tools
-        run: dnf -y install rpm-build rpm-devel rpmdevtools
+        run: dnf -y install rpm-build rpm-devel rpmdevtools rpm-sign
+
+      - name: Add GPG key
+        run: echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import
+
+      - name: Export public key
+        run: gpg --export -a "$KEY_EMAIL" > public.asc
+
+      - name: Import public key for signing
+        run: rpm --import public.asc        
 
       - name: Build rpm buildtree
         working-directory: /github/home
@@ -38,6 +51,11 @@ jobs:
       # - id: name_srpm
       #   working-directory: /github/home/rpmbuild/SRPMS        
       #   run: echo "srpm_name="ncbi-cxx-toolkit*.src.rpm >> "$GITHUB_OUTPUT"
+
+      - name: Sign SRPM
+        run: >
+          rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
+          --addsign /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm      
 
       - name: Upload SRPM
         uses: actions/upload-artifact@v4
@@ -66,7 +84,16 @@ jobs:
     container: ${{matrix.container}}
     steps:
       - name: Install rpm build tools
-        run: dnf -y install rpm-build rpm-devel rpmdevtools
+        run: dnf -y install rpm-build rpm-devel rpmdevtools rpm-sign
+
+      - name: Add GPG key
+        run: echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import
+
+      - name: Export public key
+        run: gpg --export -a "$KEY_EMAIL" > public.asc
+
+      - name: Import public key for signing
+        run: rpm --import public.asc        
 
       - name: Build rpm buildtree
         working-directory: /github/home
@@ -86,6 +113,12 @@ jobs:
       - name: Build binary RPMs
         run: rpmbuild --rebuild /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm
 
+      - name: Sign RPMs
+        run: >
+          find /github/home/rpmbuild/RPMS/ -name '*.rpm' -exec
+          rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
+          --addsign {} \;
+
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
         with:
@@ -98,18 +131,22 @@ jobs:
   build-emulated:
     name: Build on emulated ${{matrix.architecture}} Linux platform
     needs: [build-srpm]
+    if: false
     strategy:
       matrix:
         architecture: [ppc64le, s390x, i386]
         include:
           - architecture: ppc64le
             binfmt_arch: ppc64le
+            package_arch: powerpc64le            
             container: quay.io/pypa/manylinux_2_28_ppc64le
           - architecutre: s390x
             binfmt_arch: s390x
+            package_arch: s390x
             container: quay.io/pypa/manylinux_2_28_s390x
           - architecutre: i386
             binfmt_arch: 386
+            package_arch: x86_64
             container: quay.io/pypa/manylinux_2_28_i686
     runs-on: ubuntu-latest
     steps:
@@ -128,8 +165,21 @@ jobs:
       - name: Install rpm build tools
         run: >
           docker exec ${{env.container_id}} dnf -y install rpm-build rpm-devel
-          rpmdevtools
+          rpmdevtools rpm-sign
 
+      - name: Add GPG key
+        run: >
+          docker exec ${{env.container_id}} sh -c
+          "echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import"
+
+      - name: Export public key
+        run: >
+          docker exec ${{env.container_id}} sh -c
+          "gpg --export -a '$KEY_EMAIL' > public.asc"
+
+      - name: Import public key for signing
+        run: docker exec ${{env.container_id}} rpm --import public.asc
+        
       - name: Build rpm buildtree
         run: docker exec -w /root ${{env.container_id}} rpmdev-setuptree        
 
@@ -156,11 +206,213 @@ jobs:
           docker exec ${{env.container_id}} sh -c
           'rpmbuild --rebuild /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm'
 
+      - name: Sign RPMs
+        run: >
+          docker exec ${{env.container_id}}
+          find /root/rpmbuild/RPMS/ -name '*.rpm' -exec
+          rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
+          --addsign {} \;          
+
       - name: Upload RPMs
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.architecture}}
           path: emulated-out/rpmbuild/RPMS/
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+  build-cross:
+    name: Build cross-compiled binaries for ${{matrix.architecture}} Linux
+    needs: [build-srpm, build-native]
+    strategy:
+      matrix:
+        architecture: [ppc64le, s390x, i386]
+        include:
+          - architecture: ppc64le
+            binfmt_arch: ppc64le
+            package_arch: powerpc64le
+            proc_arch: powerpc64le
+            container: quay.io/pypa/manylinux_2_28_ppc64le
+          - architecutre: s390x
+            binfmt_arch: s390x
+            package_arch: s390x
+            proc_arch: s390x
+            container: quay.io/pypa/manylinux_2_28_s390x
+          - architecutre: i386
+            binfmt_arch: 386
+            package_arch: x86_64
+            proc_arch: i686
+            container: quay.io/pypa/manylinux_2_28_i686        
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: ${{matrix.binfmt_arch}}
+
+      - name: Install podman
+        run: sudo apt update && sudo apt install podman
+
+      - name: Create emulated out dir
+        run: mkdir "emulated_out"
+
+      - name: Start emulated container
+        run: >
+          echo emulated_container_id="$(
+              sudo podman run -di
+              -v "$PWD/emulated_out:/root"
+              ${{matrix.container}}
+          )" >> "$GITHUB_ENV"
+            
+      - name: Install emulated rpm build tools
+        run: >
+          sudo podman exec ${{env.emulated_container_id}}
+          dnf -y install rpm-build rpm-devel rpmdevtools
+        
+      - name: Build emulated rpm buildtree
+        run: >
+          sudo podman exec -w /root ${{env.emulated_container_id}}
+          rpmdev-setuptree
+
+      - name: Download SRPM
+        uses: actions/download-artifact@v5
+        with:
+          name: srpm
+
+      - name: Copy SRPM to emulated container
+        run: sudo cp ncbi-cxx-toolkit*.src.rpm emulated-out/rpmbuild/SRPMS/
+
+      - name: Install build dependencies on emulated container
+        run: >
+          sudo podman exec ${{env.emulated_container_id}} sh -c
+          'dnf builddep -y  /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm'
+
+      # - name: Patch libstdc++.so in emulated container
+      #   run: >
+
+      - name: Copy toolchain file creation scripts
+        run: sudo cp cross-scripts/*.sh emulated_out
+
+      - name: Create out dir
+        run: mkdir "out"        
+
+      - name: Generate toolchain file using emulated container
+        run: >
+          sudo podman exec -w /root ${{env.emulated_container_id}}
+          bash make_toolchain_file.sh -a ${{matrix.package_arch}}
+          -P ${{matrix.proc_arch}} -p /cross_root | sudo tee toolchain.cmake
+
+      - name: Mount emulated container
+        run: >
+          echo mount="$(sudo podman mount ${{env.emulated_container_id}})"
+          >> "$GITHUB_ENV"
+
+      - name: Start native container
+        run: >
+          echo
+          native_container_id="$(
+              sudo podman run -di
+              -v "${{env.mount}}:/cross_root/"
+              -v "$PWD/out:/root"              
+              quay.io/pypa/manylinux_2_28_x86_64
+          )" >> "$GITHUB_ENV"
+
+      - name: Install native rpm build tools
+        run: >
+          sudo podman exec ${{env.native_container_id}}
+          dnf -y install rpm-build rpm-devel rpmdevtools rpm-sign
+
+      - name: Add GPG key
+        run: >
+          sudo podman exec ${{env.native_container_id}} sh -c
+          "echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import"
+
+      - name: Export public key
+        run: >
+          sudo podman exec ${{env.native_container_id}} sh -c
+          "gpg --export -a '$KEY_EMAIL' > public.asc"
+
+      - name: Import public key for signing
+        run: >
+          sudo podman exec ${{env.native_container_id}} rpm --import public.asc
+
+      - name: Build native rpm buildtree
+        run: >
+          sudo podman exec -w /root ${{env.native_container_id}}
+          rpmdev-setuptree
+
+      - name: Move SRPM to native container
+        run: sudo mv ncbi-cxx-toolkit*.rpm out/rpmbuild/SRPMS/
+
+      - name: Make rpmbuild stage
+        run: mkdir rpmbuild
+
+      - name: Download native RPM
+        uses: actions/download-artifact@v5
+        with:
+          name: x86_64
+          path: rpmbuild/
+
+      - name: Copy native RPMs
+        run: >
+          sudo cp rpmbuild/RPMS/x86_64/*.rpm out/
+          
+      - name: Install native RPM dependencies on native container
+        run: >          
+          sudo podman exec ${{env.native_container_id}} sh -c
+          'dnf -y localinstall *.rpm'
+
+      - name: Install native RPMs on native container
+        run: >          
+          sudo podman exec ${{env.native_container_id}} sh -c
+          'rpm -i *.rpm'
+          
+      - name: Copy manylinux_packages repo file to native container
+        run: cp manylinux_packages.repo /out/
+
+      - name: Install manylinux_packages repo to native container
+        run: >
+          sudo podman exec ${{env.native_container_id}}
+          cp manylinux_packages.repo /etc/yum.repos.d/
+
+      - name: Install cross compiler for ${{matrix.architecture}}
+        run: >
+          sudo podman exec ${{env.native_container_id}}
+          dnf -y install gcc-${{matrix.package_arch}}-linux-gnu
+          gcc-c++-${{matrix.package_arch}}-linux-gnu
+        
+      - name: Install build dependencies on native container
+        run: >
+          sudo podman exec ${{env.native_container_id}} sh -c
+          'dnf builddep -y  /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm'
+
+      - name: Link datatool into /usr/local/bin for native container
+        run: >
+          sudo podman exec ${{env.native_container_id}} sh -c
+          'ln -s /opt/ncbi-cxx-toolkit*/bin/datatool /usr/local/bin/datatool'
+
+      - name: Build binary RPMs
+        run: >
+          sudo podman exec ${{env.native_container_id}} sh -c
+          "rpmbuild --target ${{env.proc_arch}}-redhat-linux --rebuild
+          /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm --define
+          'cmake_toolchain /root/toolchain.cmake'"
+
+      - name: Sign RPMs
+        run: >
+          sudo podman exec ${{env.native_container_id}}
+          find /root/rpmbuild/RPMS/ -name '*.rpm' -exec
+          rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
+          --addsign {} \;          
+    
+      - name: Upload RPMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{matrix.architecture}}
+          path: out/rpmbuild/RPMS/
           if-no-files-found: error
           retention-days: 1
           overwrite: true
