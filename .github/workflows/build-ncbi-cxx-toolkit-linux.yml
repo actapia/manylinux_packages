@@ -208,6 +208,7 @@ jobs:
 
       - name: Sign RPMs
         run: >
+          cp ncbi-cxx-toolkit/rpm/*.spec /github/home/rpmbuild/SPECS            │                       |In [38]: data["jobs"]["build-cross"]["steps"][4]["run"]
           docker exec ${{env.container_id}}
           find /root/rpmbuild/RPMS/ -name '*.rpm' -exec
           rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
@@ -257,13 +258,13 @@ jobs:
         run: sudo apt update && sudo apt install podman
 
       - name: Create emulated out dir
-        run: mkdir "emulated_out"
+        run: mkdir "emulated-out"
 
       - name: Start emulated container
         run: >-
           echo emulated_container_id="$(
           sudo podman run -di
-          -v "$PWD/emulated_out:/root"
+          -v "$PWD/emulated-out:/root"
           ${{matrix.container}}
           )" >> "$GITHUB_ENV"
             
@@ -294,7 +295,7 @@ jobs:
       #   run: >
 
       - name: Copy toolchain file creation scripts
-        run: sudo cp cross-scripts/*.sh emulated_out
+        run: sudo cp cross-scripts/*.sh emulated-out
 
       - name: Create out dir
         run: mkdir "out"        
