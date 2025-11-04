@@ -59,7 +59,7 @@ set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES $cxx_standard_include_dirs)
 set(CMAKE_C_STANDARD_LIBRARIES "$c_standard_libraries")
 set(CMAKE_CXX_STANDARD_LIBRARIES "$cxx_standard_libraries")
 EOF
-if [[ $arch =~ i.86 ]]; then
+if [[ $proc =~ i.86 ]]; then
     cat << EOF
 UNSET(CMAKE_C_FLAGS CACHE)
 SET(CMAKE_C_FLAGS "-m32" CACHE STRING "" FORCE)
