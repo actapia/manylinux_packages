@@ -347,13 +347,13 @@ jobs:
         run: sudo mv ncbi-cxx-toolkit*.rpm out/rpmbuild/SRPMS/
 
       - name: Make rpmbuild stage
-        run: mkdir rpmbuild
+        run: mkdir -p rpmbuild/RPMS
 
       - name: Download native RPM
         uses: actions/download-artifact@v5
         with:
           name: x86_64
-          path: rpmbuild/
+          path: rpmbuild/RPMS/
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
@@ -366,20 +366,20 @@ jobs:
       - name: Install native RPM dependencies on native container
         run: >          
           sudo podman exec ${{env.native_container_id}} sh -c
-          'dnf -y localinstall *.rpm'
+          'dnf -y localinstall /root/*.rpm'
 
-      - name: Install native RPMs on native container
-        run: >          
-          sudo podman exec ${{env.native_container_id}} sh -c
-          'rpm -i *.rpm'
+      # - name: Install native RPMs on native container
+      #   run: >          
+      #     sudo podman exec ${{env.native_container_id}} sh -c
+      #     'rpm -i /root/*.rpm'
           
       - name: Copy manylinux_packages repo file to native container
-        run: cp manylinux_packages.repo /out/
+        run: sudo cp manylinux_packages.repo out/
 
       - name: Install manylinux_packages repo to native container
         run: >
           sudo podman exec ${{env.native_container_id}}
-          cp manylinux_packages.repo /etc/yum.repos.d/
+          cp /root/manylinux_packages.repo /etc/yum.repos.d/
 
       - name: Install cross compiler for ${{matrix.architecture}}
         run: >
