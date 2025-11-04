@@ -1,0 +1,17 @@
+[manylinux_packages]
+name = Manylinux Packages
+baseurl = https://www.cs.uky.edu/~acta225/manylinux_packages/almalinux/$releasever
+enabled = 1
+repo_gpgcheck = 1
+gpgcheck = 1
+gpgkey = https://www.cs.uky.edu/~acta225/manylinux_packages/almalinux/repokey.asc
+         https://www.cs.uky.edu/~acta225/manylinux_packages/almalinux/package.asc
+
+[manylinux_packages-source]
+name = Manylinux Packages Source
+baseurl = https://www.cs.uky.edu/~acta225/manylinux_packages/almalinux/$releasever/source
+enabled = 1
+repo_gpgcheck = 1
+gpgcheck = 1
+gpgkey = https://www.cs.uky.edu/~acta225/manylinux_packages/almalinux/repokey.asc
+         https://www.cs.uky.edu/~acta225/manylinux_packages/almalinux/package.asc
