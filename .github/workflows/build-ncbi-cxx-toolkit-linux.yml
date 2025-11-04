@@ -260,11 +260,11 @@ jobs:
         run: mkdir "emulated_out"
 
       - name: Start emulated container
-        run: >
+        run: >-
           echo emulated_container_id="$(
-              sudo podman run -di
-              -v "$PWD/emulated_out:/root"
-              ${{matrix.container}}
+          sudo podman run -di
+          -v "$PWD/emulated_out:/root"
+          ${{matrix.container}}
           )" >> "$GITHUB_ENV"
             
       - name: Install emulated rpm build tools
@@ -314,10 +314,10 @@ jobs:
         run: >
           echo
           native_container_id="$(
-              sudo podman run -di
-              -v "${{env.mount}}:/cross_root/"
-              -v "$PWD/out:/root"              
-              quay.io/pypa/manylinux_2_28_x86_64
+          sudo podman run -di
+          -v "${{env.mount}}:/cross_root/"
+          -v "$PWD/out:/root"              
+          quay.io/pypa/manylinux_2_28_x86_64
           )" >> "$GITHUB_ENV"
 
       - name: Install native rpm build tools
