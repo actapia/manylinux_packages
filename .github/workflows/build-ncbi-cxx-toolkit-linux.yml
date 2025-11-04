@@ -208,8 +208,6 @@ jobs:
 
       - name: Sign RPMs
         run: >
-          cp ncbi-cxx-toolkit/rpm/*.spec /github/home/rpmbuild/SPECS            │                       |In [38]: data["jobs"]["build-cross"]["steps"][4]["run"]
-          docker exec ${{env.container_id}}
           find /root/rpmbuild/RPMS/ -name '*.rpm' -exec
           rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
           --addsign {} \;          
