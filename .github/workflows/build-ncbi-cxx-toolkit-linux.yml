@@ -245,6 +245,22 @@ jobs:
             container: quay.io/pypa/manylinux_2_28_i686        
     runs-on: ubuntu-latest
     steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: true
+          
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+          
       - uses: actions/checkout@v5
       
       - name: Set up QEMU
@@ -302,7 +318,7 @@ jobs:
         run: >
           sudo podman exec -w /root ${{env.emulated_container_id}}
           bash make_toolchain_file.sh -a ${{matrix.package_arch}}
-          -P ${{matrix.proc_arch}} -p /cross_root | sudo tee toolchain.cmake
+          -P ${{matrix.proc_arch}} -p /cross_root | sudo tee out/toolchain.cmake
 
       - name: Mount emulated container
         run: >
@@ -355,9 +371,13 @@ jobs:
           name: x86_64
           path: rpmbuild/RPMS/
 
+      - name: Remove unneeded debug RPMs.
+        run: >
+          sudo rm rpmbuild/RPMS/x86_64/*debug*
+
       - name: Copy native RPMs
         run: >
-          sudo cp rpmbuild/RPMS/x86_64/*.rpm out/
+          sudo mv rpmbuild/RPMS/x86_64/*.rpm out/
           
       - name: Install native RPM dependencies on native container
         run: >          
