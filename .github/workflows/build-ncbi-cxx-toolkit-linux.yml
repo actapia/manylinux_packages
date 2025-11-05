@@ -355,10 +355,6 @@ jobs:
           name: x86_64
           path: rpmbuild/RPMS/
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}          
-
       - name: Copy native RPMs
         run: >
           sudo cp rpmbuild/RPMS/x86_64/*.rpm out/
@@ -396,6 +392,11 @@ jobs:
         run: >
           sudo podman exec ${{env.native_container_id}} sh -c
           'ln -s /opt/ncbi-cxx-toolkit*/bin/datatool /usr/local/bin/datatool'
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}          
+          
 
       - name: Build binary RPMs
         run: >
