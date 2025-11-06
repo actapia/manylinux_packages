@@ -9,6 +9,13 @@ on:
         required: false
         default: false
 
+      download:
+        type: boolean
+        description: "Download to RPM repo"
+        required: false
+        default: true
+        
+
 env:
   KEY_NAME: "Andrew Tapia"
   KEY_EMAIL: "andrew.tapia@uky.edu"        
@@ -58,6 +65,7 @@ jobs:
           --addsign /github/home/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm      
 
       - name: Upload SRPM
+        id: artifact-upload        
         uses: actions/upload-artifact@v4
         with:
           name: srpm
@@ -66,6 +74,13 @@ jobs:
           retention-days: 1
           overwrite: true
 
+      - name: Download to RPM repo
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+        run: >
+          curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          https://www.cs.uky.edu/~acta225/ci_get/get.php
+          -d "repo=${{github.repository}}"
+          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"        
       
   build-native:
     name: Build on native ${{matrix.architecture}} Linux platform
@@ -120,6 +135,7 @@ jobs:
           --addsign {} \;
 
       - name: Upload RPMs
+        id: artifact-upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.architecture}}
@@ -127,6 +143,14 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           overwrite: true
+
+      - name: Download to RPM repo
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+        run: >
+          curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          https://www.cs.uky.edu/~acta225/ci_get/get.php
+          -d "repo=${{github.repository}}"
+          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"                  
 
   build-emulated:
     name: Build on emulated ${{matrix.architecture}} Linux platform
@@ -213,6 +237,7 @@ jobs:
           --addsign {} \;          
 
       - name: Upload RPMs
+        id: artifact-upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.architecture}}
@@ -220,6 +245,15 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           overwrite: true
+
+      - name: Download to RPM repo
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+        run: >
+          curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          https://www.cs.uky.edu/~acta225/ci_get/get.php
+          -d "repo=${{github.repository}}"
+          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"        
+          
 
   build-cross:
     name: Build cross-compiled binaries for ${{matrix.architecture}} Linux
@@ -433,6 +467,7 @@ jobs:
           --addsign {} \;          
     
       - name: Upload RPMs
+        id: artifact-upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.architecture}}
@@ -440,3 +475,12 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           overwrite: true
+
+      - name: Download to RPM repo
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+        run: >
+          curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          https://www.cs.uky.edu/~acta225/ci_get/get.php
+          -d "repo=${{github.repository}}"
+          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"        
+          
