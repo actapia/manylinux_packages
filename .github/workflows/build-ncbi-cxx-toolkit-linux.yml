@@ -421,7 +421,7 @@ jobs:
       - name: Build binary RPMs
         run: >
           sudo podman exec ${{env.native_container_id}} sh -c
-          "rpmbuild --target ${{env.proc_arch}}-redhat-linux --rebuild
+          "rpmbuild --target ${{matrix.proc_arch}}-redhat-linux --rebuild
           /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm --define
           'cmake_toolchain /root/toolchain.cmake'"
 
