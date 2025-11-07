@@ -164,11 +164,11 @@ jobs:
             binfmt_arch: ppc64le
             package_arch: powerpc64le            
             container: quay.io/pypa/manylinux_2_28_ppc64le
-          - architecutre: s390x
+          - architecture: s390x
             binfmt_arch: s390x
             package_arch: s390x
             container: quay.io/pypa/manylinux_2_28_s390x
-          - architecutre: i386
+          - architecture: i386
             binfmt_arch: 386
             package_arch: x86_64
             container: quay.io/pypa/manylinux_2_28_i686
@@ -267,12 +267,12 @@ jobs:
             package_arch: powerpc64le
             proc_arch: powerpc64le
             container: quay.io/pypa/manylinux_2_28_ppc64le
-          - architecutre: s390x
+          - architecture: s390x
             binfmt_arch: s390x
             package_arch: s390x
             proc_arch: s390x
             container: quay.io/pypa/manylinux_2_28_s390x
-          - architecutre: i386
+          - architecture: i386
             binfmt_arch: 386
             package_arch: x86_64
             proc_arch: i686
