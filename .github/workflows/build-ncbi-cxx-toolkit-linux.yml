@@ -305,16 +305,20 @@ jobs:
       - name: Install podman
         run: sudo apt update && sudo apt install podman
 
-      - name: Create emulated out dir
-        run: mkdir "emulated-out"
+      # - name: Create emulated out dir
+      #   run: mkdir "emulated-out"
 
       - name: Start emulated container
         run: >-
           echo emulated_container_id="$(
           sudo podman run -di
-          -v "$PWD/emulated-out:/root"
           ${{matrix.container}}
           )" >> "$GITHUB_ENV"
+
+      - name: Mount emulated container
+        run: >
+          echo cross_mount="$(sudo podman mount ${{env.emulated_container_id}})"
+          >> "$GITHUB_ENV"          
             
       - name: Install emulated rpm build tools
         run: >
@@ -332,7 +336,9 @@ jobs:
           name: srpm
 
       - name: Copy SRPM to emulated container
-        run: sudo cp ncbi-cxx-toolkit*.src.rpm emulated-out/rpmbuild/SRPMS/
+        run: >
+          sudo cp ncbi-cxx-toolkit*.src.rpm
+          "${{env.cross_mount}}/root/rpmbuild/SRPMS/"
 
       - name: Install build dependencies on emulated container
         run: >
@@ -343,31 +349,36 @@ jobs:
       #   run: >
 
       - name: Copy toolchain file creation scripts
-        run: sudo cp cross-scripts/*.sh emulated-out
-
-      - name: Create out dir
-        run: mkdir "out"        
-
-      - name: Generate toolchain file using emulated container
         run: >
-          sudo podman exec -w /root ${{env.emulated_container_id}}
-          bash make_toolchain_file.sh -a ${{matrix.package_arch}}
-          -P ${{matrix.proc_arch}} -p /cross_root | sudo tee out/toolchain.cmake
+          sudo cp cross-scripts/*.sh "${{env.cross_mount}}/root/"
 
-      - name: Mount emulated container
-        run: >
-          echo mount="$(sudo podman mount ${{env.emulated_container_id}})"
-          >> "$GITHUB_ENV"
+      # - name: Create out dir
+      #   run: mkdir "out"
+        
+
+
 
       - name: Start native container
         run: >
           echo
           native_container_id="$(
           sudo podman run -di
-          -v "${{env.mount}}:/cross_root/"
-          -v "$PWD/out:/root"              
+          -v "${{env.cross_mount}}:/cross_root/"
           quay.io/pypa/manylinux_2_28_x86_64
           )" >> "$GITHUB_ENV"
+
+      - name: Mount native container
+        run: >
+          echo native_mount="$(sudo podman mount ${{env.native_container_id}})"
+          >> "$GITHUB_ENV"
+
+      - name: Generate toolchain file using emulated container
+        run: >
+          sudo podman exec -w /root ${{env.emulated_container_id}}
+          bash make_toolchain_file.sh -a ${{matrix.package_arch}}
+          -P ${{matrix.proc_arch}} -p /cross_root | sudo tee
+          ${{env.native_mount}}/root/toolchain.cmake
+          
 
       - name: Install native rpm build tools
         run: >
@@ -394,7 +405,9 @@ jobs:
           rpmdev-setuptree
 
       - name: Move SRPM to native container
-        run: sudo mv ncbi-cxx-toolkit*.rpm out/rpmbuild/SRPMS/
+        run: >
+          sudo mv ncbi-cxx-toolkit*.rpm
+          "${{env.native_mount}}/root/rpmbuild/SRPMS/"
 
       - name: Make rpmbuild stage
         run: mkdir -p rpmbuild/RPMS
@@ -411,7 +424,7 @@ jobs:
 
       - name: Copy native RPMs
         run: >
-          sudo mv rpmbuild/RPMS/x86_64/*.rpm out/
+          sudo mv rpmbuild/RPMS/x86_64/*.rpm ${{env.native_mount}}/root/
           
       - name: Install native RPM dependencies on native container
         run: >          
@@ -424,7 +437,7 @@ jobs:
       #     'rpm -i /root/*.rpm'
           
       - name: Copy manylinux_packages repo file to native container
-        run: sudo cp manylinux_packages.repo out/
+        run: sudo cp manylinux_packages.repo ${{env.native_mount}}/root/
 
       - name: Install manylinux_packages repo to native container
         run: >
@@ -471,7 +484,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.architecture}}
-          path: out/rpmbuild/RPMS/
+          path: ${{env.native_mount}}/root/rpmbuild/RPMS/
           if-no-files-found: error
           retention-days: 1
           overwrite: true
