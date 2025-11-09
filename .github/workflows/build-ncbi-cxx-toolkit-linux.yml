@@ -320,10 +320,10 @@ jobs:
           echo cross_mount="$(sudo podman mount ${{env.emulated_container_id}})"
           >> "$GITHUB_ENV"          
             
-      - name: Install emulated rpm build tools
+      - name: Install emulated rpm build tools and symlinks
         run: >
           sudo podman exec ${{env.emulated_container_id}}
-          dnf -y install rpm-build rpm-devel rpmdevtools
+          dnf -y install rpm-build rpm-devel rpmdevtools symlinks
         
       - name: Build emulated rpm buildtree
         run: >
@@ -351,6 +351,11 @@ jobs:
       - name: Copy toolchain file creation scripts
         run: >
           sudo cp cross-scripts/*.sh "${{env.cross_mount}}/root/"
+
+      - name: Change emulated container absolute symlinks to relative symlinks
+        run: >
+          sudo podman exec -it ${{env.emulated_container_id}}
+          'symlinks -cr .'
 
       # - name: Create out dir
       #   run: mkdir "out"
