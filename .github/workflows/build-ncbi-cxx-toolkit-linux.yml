@@ -354,8 +354,7 @@ jobs:
 
       - name: Change emulated container absolute symlinks to relative symlinks
         run: >
-          sudo podman exec -it ${{env.emulated_container_id}}
-          'symlinks -cr .'
+          sudo podman exec ${{env.emulated_container_id}} symlinks -cr .
 
       # - name: Create out dir
       #   run: mkdir "out"
