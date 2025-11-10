@@ -1,0 +1,4 @@
+[submodule "homebrew-cibuildwheel_packages"]
+	path = homebrew-cibuildwheel_packages
+	url = https://github.com/actapia/homebrew-cibuildwheel_packages
+	branch = main
