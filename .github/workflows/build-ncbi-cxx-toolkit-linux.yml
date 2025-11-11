@@ -358,9 +358,6 @@ jobs:
 
       # - name: Create out dir
       #   run: mkdir "out"
-        
-
-
 
       - name: Start native container
         run: >
@@ -466,15 +463,17 @@ jobs:
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}          
-          
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}        
 
       - name: Build binary RPMs
         run: >
           sudo podman exec ${{env.native_container_id}} sh -c
-          "rpmbuild --target ${{matrix.proc_arch}}-redhat-linux --rebuild
+          'td="$(mktemp -d)";
+          ln -s /usr/bin/${{matrix.proc_arch}}-linux-gnu-objcopy "$td"/objcopy;
+          export PATH="$td:$PATH";
+          rpmbuild --target ${{matrix.proc_arch}}-redhat-linux --rebuild
           /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm --define
-          'cmake_toolchain /root/toolchain.cmake'"
+          "cmake_toolchain /root/toolchain.cmake";'
 
       - name: Sign RPMs
         run: >

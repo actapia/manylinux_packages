@@ -42,6 +42,10 @@ Biotechnology Information (NCBI).
 %global zcf_disabled 1
 %endif
 
+%ifarch s390x
+%global debug_package %{nil}
+%endif
+
 %prep
 %autosetup -n %{name}-public-release-%{version} -p1
 
