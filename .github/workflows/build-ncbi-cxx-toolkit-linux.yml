@@ -480,14 +480,22 @@ jobs:
           sudo podman exec ${{env.native_container_id}}
           find /root/rpmbuild/RPMS/ -name '*.rpm' -exec
           rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
-          --addsign {} \;          
+          --addsign {} \;
+
+      - name: Move RPMs
+        run: >
+          sudo mv ${{env.native_mount}}/root/rpmbuild .
+
+      - name: Change RPM permissions
+        run: >
+          sudo chown -R "$USER" rpmbuild
     
       - name: Upload RPMs
         id: artifact-upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.architecture}}
-          path: ${{env.native_mount}}/root/rpmbuild/RPMS/
+          path: rpmbuild/RPMS/
           if-no-files-found: error
           retention-days: 1
           overwrite: true
