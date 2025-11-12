@@ -266,16 +266,19 @@ jobs:
             binfmt_arch: ppc64le
             package_arch: powerpc64le
             proc_arch: powerpc64le
+            target_arch: ppc64le
             container: quay.io/pypa/manylinux_2_28_ppc64le
           - architecture: s390x
             binfmt_arch: s390x
             package_arch: s390x
             proc_arch: s390x
+            target_arch: s390x
             container: quay.io/pypa/manylinux_2_28_s390x
           - architecture: i386
             binfmt_arch: 386
             package_arch: x86_64
             proc_arch: i686
+            target_arch: i686
             container: quay.io/pypa/manylinux_2_28_i686        
     runs-on: ubuntu-latest
     steps:
@@ -471,7 +474,7 @@ jobs:
           'td="$(mktemp -d)";
           ln -s /usr/bin/${{matrix.proc_arch}}-linux-gnu-objcopy "$td"/objcopy;
           export PATH="$td:$PATH";
-          rpmbuild --target ${{matrix.proc_arch}}-redhat-linux --rebuild
+          rpmbuild --target ${{matrix.target_arch}}-redhat-linux --rebuild
           /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm --define
           "cmake_toolchain /root/toolchain.cmake";'
 
