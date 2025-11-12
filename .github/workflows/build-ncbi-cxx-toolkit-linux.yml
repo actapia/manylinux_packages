@@ -368,7 +368,7 @@ jobs:
           native_container_id="$(
           sudo podman run -di
           -v "${{env.cross_mount}}:/cross_root/"
-          -v "$PWD:out:/root"
+          -v "$PWD/out:/root"
           quay.io/pypa/manylinux_2_28_x86_64
           )" >> "$GITHUB_ENV"
 
