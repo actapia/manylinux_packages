@@ -359,8 +359,8 @@ jobs:
         run: >
           sudo podman exec ${{env.emulated_container_id}} symlinks -cr .
 
-      # - name: Create out dir
-      #   run: mkdir "out"
+      - name: Create out dir
+        run: mkdir "out"
 
       - name: Start native container
         run: >
@@ -368,6 +368,7 @@ jobs:
           native_container_id="$(
           sudo podman run -di
           -v "${{env.cross_mount}}:/cross_root/"
+          -v "out:/root"
           quay.io/pypa/manylinux_2_28_x86_64
           )" >> "$GITHUB_ENV"
 
@@ -381,7 +382,7 @@ jobs:
           sudo podman exec -w /root ${{env.emulated_container_id}}
           bash make_toolchain_file.sh -a ${{matrix.package_arch}}
           -P ${{matrix.proc_arch}} -p /cross_root | sudo tee
-          ${{env.native_mount}}/root/toolchain.cmake
+          out/toolchain.cmake
           
 
       - name: Install native rpm build tools
@@ -411,7 +412,7 @@ jobs:
       - name: Move SRPM to native container
         run: >
           sudo mv ncbi-cxx-toolkit*.rpm
-          "${{env.native_mount}}/root/rpmbuild/SRPMS/"
+          "out/rpmbuild/SRPMS/"
 
       - name: Make rpmbuild stage
         run: mkdir -p rpmbuild/RPMS
@@ -428,7 +429,7 @@ jobs:
 
       - name: Copy native RPMs
         run: >
-          sudo mv rpmbuild/RPMS/x86_64/*.rpm ${{env.native_mount}}/root/
+          sudo mv rpmbuild/RPMS/x86_64/*.rpm out
           
       - name: Install native RPM dependencies on native container
         run: >          
@@ -441,7 +442,7 @@ jobs:
       #     'rpm -i /root/*.rpm'
           
       - name: Copy manylinux_packages repo file to native container
-        run: sudo cp manylinux_packages.repo ${{env.native_mount}}/root/
+        run: sudo cp manylinux_packages.repo out
 
       - name: Install manylinux_packages repo to native container
         run: >
@@ -485,20 +486,16 @@ jobs:
           rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
           --addsign {} \;
 
-      - name: Move RPMs
+      - name: Change RPM owners
         run: >
-          sudo mv ${{env.native_mount}}/root/rpmbuild .
-
-      - name: Change RPM permissions
-        run: >
-          sudo chown -R "$USER" rpmbuild
+          sudo chown -R "$USER" out
     
       - name: Upload RPMs
         id: artifact-upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.architecture}}
-          path: rpmbuild/RPMS/
+          path: out/RPMS/
           if-no-files-found: error
           retention-days: 1
           overwrite: true
