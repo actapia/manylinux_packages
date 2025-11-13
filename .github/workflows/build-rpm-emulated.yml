@@ -117,7 +117,8 @@ jobs:
         - name: Sign RPMs
           run: >
             find /root/rpmbuild/RPMS/ -name '*.rpm' -exec
-            rpm --define "_gpg_name ${{inputs.key-name}} <${{inputs.key-email}}>"
+            rpm --define "_gpg_name ${{inputs.key-name}}
+            <${{inputs.key-email}}>"
             --addsign {} \;          
 
         - name: Upload RPMs

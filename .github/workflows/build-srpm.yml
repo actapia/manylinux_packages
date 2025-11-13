@@ -60,7 +60,7 @@ jobs:
 
       - name: Sign SRPM
         run: >
-          rpm --define "_gpg_name ${{inputs.key-name}} <${{inputs.key-name}}>"
+          rpm --define "_gpg_name ${{inputs.key-name}} <${{inputs.key-email}}>"
           --addsign
           /github/home/rpmbuild/SRPMS/${{inputs.package-name}}*.src.rpm 
 
