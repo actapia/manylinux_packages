@@ -22,8 +22,7 @@ jobs:
       key-email: andrew.tapia@uky.edu
       key-name: Andrew Tapia
       package-name: ncbi-cxx-toolkit
-      download: >
-        ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+      download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
       
       
   build-native:
@@ -46,8 +45,7 @@ jobs:
       runner: ${{matrix.runner}}
       container: ${{matrix.container}}
       architecture: ${{matrix.architecture}}      
-      download: >
-        ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+      download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
     secrets: inherit
       
   build-emulated:
@@ -79,8 +77,7 @@ jobs:
       binfmt_arch:  ${{matrix.binfmt_arch}}
       package_arch: ${{matrix.package_arch}}
       architecture: ${{matrix.architecture}}
-      download: >
-        ${{ github.event_name == 'workflow_dispatch' && inputs.download }}      
+      download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}      
 
   build-cross:
     name: Build cross-compiled binaries for ${{matrix.architecture}} Linux
