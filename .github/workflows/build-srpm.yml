@@ -45,7 +45,7 @@ jobs:
 
       - name: Copy spec and patch files
         run: |
-          cp ${{inputs.pacakge-name}}/rpm/*.spec /github/home/rpmbuild/SPECS
+          cp ${{inputs.package-name}}/rpm/*.spec /github/home/rpmbuild/SPECS
           cp ${{inputs.package-name}}/rpm/*.patch /github/home/rpmbuild/SOURCES
 
       - name: Download source
