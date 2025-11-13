@@ -17,7 +17,7 @@ on:
 
 jobs:
   build-srpm:
-    uses: actapia/manylinux_packages/.github/workflows/build-srpm.yml
+    uses: ./.github/workflows/build-srpm.yml
     with:
       key-email: andrew.tapia@uky.edu
       key-name: Andrew Tapia
@@ -27,7 +27,7 @@ jobs:
       
       
   build-native:
-    uses: actapia/manylinux_packages/.github/workflows/build-rpm-native.yml
+    uses: ./.github/workflows/build-rpm-native.yml
     needs: [build-srpm]
     strategy:
       matrix:
@@ -50,7 +50,7 @@ jobs:
     secrets: inherit
       
   build-emulated:
-    uses: actapia/manylinux_packages/.github/workflows/build-rpm-emulated.yml
+    uses: ./.github/workflows/build-rpm-emulated.yml
     needs: [build-srpm]
     if: false
     strategy:
