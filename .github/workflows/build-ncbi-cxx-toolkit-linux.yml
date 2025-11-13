@@ -13,7 +13,11 @@ on:
         type: boolean
         description: "Download to RPM repo"
         required: false
-        default: true        
+        default: true
+
+env:
+  KEY_NAME: "Andrew Tapia"
+  KEY_EMAIL: "andrew.tapia@uky.edu"        
 
 jobs:
   build-srpm:
