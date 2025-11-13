@@ -78,6 +78,7 @@ jobs:
       container: ${{matrix.container}}
       binfmt_arch:  ${{matrix.binfmt_arch}}
       package_arch: ${{matrix.package_arch}}
+      architecture: ${{matrix.architecture}}
       download: >
         ${{ github.event_name == 'workflow_dispatch' && inputs.download }}      
 
