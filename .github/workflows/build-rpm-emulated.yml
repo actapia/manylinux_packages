@@ -32,7 +32,7 @@ on:
         type: string
       download:
         default: false
-        type: bool
+        type: boolean
 
 jobs:
     build-emulated:

@@ -76,7 +76,7 @@ jobs:
       runner: ${{matrix.runner}}
       container: ${{matrix.container}}
       binfmt_arch:  ${{matrix.binfmt_arch}}
-      package_arch: ${{matirx.package_arch}}
+      package_arch: ${{matrix.package_arch}}
       download: >
         ${{ github.event_name == 'workflow_dispatch' && inputs.download }}      
 

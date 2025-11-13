@@ -17,7 +17,7 @@ on:
         type: string
       download:
         default: true
-        type: bool
+        type: boolean
 
 jobs:
   build-srpm:
