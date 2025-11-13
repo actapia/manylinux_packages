@@ -1,0 +1,103 @@
+name: build-rpm-native
+
+on:
+  workflow_call:
+    inputs:
+      key-email:
+        required: true
+        type: string
+      key-name:
+        required: true
+        type: string        
+      package-name:
+        required: true
+        type: string
+      srpm-name:
+        default: srpm
+        type: string
+      runner:
+        required: true
+        type: string
+      container:
+        required: true
+        type: string
+      architecture:
+        required: true
+        type: string
+      download:
+        default: false
+        type: bool
+
+jobs:
+  build-native:
+    name: Build on native ${{matrix.architecture}} Linux platform
+    # strategy:
+    #   matrix:
+    #     architecture: [x86_64, aarch64]
+    #     include:
+    #       - architecture: x86_64
+    #         runner: ubuntu-latest
+    #         container: quay.io/pypa/manylinux_2_28_x86_64
+    #       - architecture: aarch64
+    #         runner: ubuntu-24.04-arm
+    #         container: quay.io/pypa/manylinux_2_28_aarch64
+    runs-on: ${{inputs.runner}}
+    container: ${{inputs.container}}
+    steps:
+      - name: Install rpm build tools
+        run: dnf -y install rpm-build rpm-devel rpmdevtools rpm-sign
+
+      - name: Add GPG key
+        run: echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import
+
+      - name: Export public key
+        run: gpg --export -a "${{inputs.key-email}}" > public.asc
+
+      - name: Import public key for signing
+        run: rpm --import public.asc        
+
+      - name: Build rpm buildtree
+        working-directory: /github/home
+        run: rpmdev-setuptree        
+
+      - name: Download SRPM
+        uses: actions/download-artifact@v5
+        with:
+          name: ${{inputs.srpm-name}}
+
+      - name: Copy SRPM to build tree
+        run: cp ${{inputs.package-name}}*.src.rpm /github/home/rpmbuild/SRPMS/
+
+      - name: Install build dependencies
+        run: >
+          dnf builddep -y
+          /github/home/rpmbuild/SRPMS/${{inputs.package-name}}*.src.rpm
+
+      - name: Build binary RPMs
+        run: >
+          rpmbuild --rebuild
+          /github/home/rpmbuild/SRPMS/${{inputs.package-name}}*.src.rpm
+
+      - name: Sign RPMs
+        run: >
+          find /github/home/rpmbuild/RPMS/ -name '*.rpm' -exec
+          rpm --define "_gpg_name ${{inputs.key-name}} <${{inputs.key-email}}>"
+          --addsign {} \;
+
+      - name: Upload RPMs
+        id: artifact-upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{inputs.architecture}}
+          path: /github/home/rpmbuild/RPMS/
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+      - name: Download to RPM repo
+        if: ${{ inputs.download }}
+        run: >
+          curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          https://www.cs.uky.edu/~acta225/ci_get/get.php
+          -d "repo=${{github.repository}}"
+          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"

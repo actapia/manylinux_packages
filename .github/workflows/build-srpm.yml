@@ -1,0 +1,84 @@
+name: build-srpm
+
+on:
+  workflow_call:
+    inputs:
+      key-email:
+        required: true
+        type: string
+      key-name:
+        required: true
+        type: string        
+      package-name:
+        required: true
+        type: string
+      srpm-name:
+        default: srpm
+        type: string
+      download:
+        default: true
+        type: bool
+
+jobs:
+  build-srpm:
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_28_x86_64
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install rpm build tools
+        run: dnf -y install rpm-build rpm-devel rpmdevtools rpm-sign
+
+      - name: Add GPG key
+        run: echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import
+
+      - name: Export public key
+        run: gpg --export -a ${{inputs.key-email}} > public.asc
+
+      - name: Import public key for signing
+        run: rpm --import public.asc        
+
+      - name: Build rpm buildtree
+        working-directory: /github/home
+        run: rpmdev-setuptree
+
+      - name: Copy spec and patch files
+        run: |
+          cp ${{inputs.pacakge-name}}/rpm/*.spec /github/home/rpmbuild/SPECS
+          cp ${{inputs.package-name}}/rpm/*.patch /github/home/rpmbuild/SOURCES
+
+      - name: Download source
+        run: >
+          spectool -g -R
+          /github/home/rpmbuild/SPECS/${{inputs.package-name}}.spec
+
+      - name: Build SRPM
+        run: >
+          rpmbuild -bs
+          /github/home/rpmbuild/SPECS/${{inputs.package-name}}.spec
+
+      - name: Sign SRPM
+        run: >
+          rpm --define "_gpg_name ${{inputs.key-name}} <${{inputs.key-name}}>"
+          --addsign
+          /github/home/rpmbuild/SRPMS/${{inputs.package-name}}*.src.rpm 
+
+      - name: Upload SRPM
+        id: artifact-upload        
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{inputs.srpm-name}}
+          path: /github/home/rpmbuild/SRPMS/${{inputs.package-name}}*.src.rpm
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+      - name: Download to RPM repo
+        if: ${{ inputs.download }}
+        run: >
+          curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          https://www.cs.uky.edu/~acta225/ci_get/get.php
+          -d "repo=${{github.repository}}"
+          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"        
+
