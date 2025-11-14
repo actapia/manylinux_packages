@@ -46,11 +46,10 @@ jobs:
       - name: Copy spec and patch files
         run: >          
           cp ${{inputs.package-name}}/rpm/*.spec /github/home/rpmbuild/SPECS;
-          bash -c
-          "shopt -s extglob;
-          cp ${{inputs.package-name}}/rpm/!(*.spec)
-          /github/home/rpmbuild/SOURCES;
-          shopt -u extglob;"
+          shopt -s extglob;
+          eval "cp ${{inputs.package-name}}/rpm/!(*.spec)
+          /github/home/rpmbuild/SOURCES;"
+          shopt -u extglob;
 
       - name: Download source
         run: >
