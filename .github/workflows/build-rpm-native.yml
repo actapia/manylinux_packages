@@ -30,7 +30,7 @@ on:
 
 jobs:
   build-native:
-    name: Build on native ${{matrix.architecture}} Linux platform
+    name: Build on native ${{inputs.architecture}} Linux platform
     # strategy:
     #   matrix:
     #     architecture: [x86_64, aarch64]

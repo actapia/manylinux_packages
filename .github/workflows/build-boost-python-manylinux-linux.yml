@@ -1,0 +1,81 @@
+name: build-boost-python-manylinux-linux
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+
+      download:
+        type: boolean
+        description: "Download to RPM repo"
+        required: false
+        default: true
+
+jobs:
+  build-srpm:
+    uses: ./.github/workflows/build-srpm.yml
+    with:
+      key-email: andrew.tapia@uky.edu
+      key-name: Andrew Tapia
+      package-name: boost-python-manylinux
+      download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+    secrets: inherit
+
+  build-native:
+    uses: ./.github/workflows/build-rpm-native.yml
+    needs: [build-srpm]
+    strategy:
+      matrix:
+        architecture: [x86_64, aarch64]
+        include:
+          - architecture: x86_64
+            runner: ubuntu-latest
+            container: quay.io/pypa/manylinux_2_28_x86_64
+          - architecture: aarch64
+            runner: ubuntu-24.04-arm
+            container: quay.io/pypa/manylinux_2_28_aarch64    
+    with:
+      key-email: andrew.tapia@uky.edu
+      key-name: Andrew Tapia
+      package-name: boost-python-manylinux
+      runner: ${{matrix.runner}}
+      container: ${{matrix.container}}
+      architecture: ${{matrix.architecture}}      
+      download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+    secrets: inherit
+      
+  build-emulated:
+    uses: ./.github/workflows/build-rpm-emulated.yml
+    needs: [build-srpm]
+    if: false
+    strategy:
+      matrix:
+        architecture: [ppc64le, s390x, i386]
+        include:
+          - architecture: ppc64le
+            binfmt_arch: ppc64le
+            package_arch: powerpc64le            
+            container: quay.io/pypa/manylinux_2_28_ppc64le
+          - architecture: s390x
+            binfmt_arch: s390x
+            package_arch: s390x
+            container: quay.io/pypa/manylinux_2_28_s390x
+          - architecture: i386
+            binfmt_arch: 386
+            package_arch: x86_64
+            container: quay.io/pypa/manylinux_2_28_i686
+    with:
+      key-email: andrew.tapia@uky.edu
+      key-name: Andrew Tapia
+      package-name: boost-python-manylinux
+      runner: ${{matrix.runner}}
+      container: ${{matrix.container}}
+      binfmt_arch:  ${{matrix.binfmt_arch}}
+      package_arch: ${{matrix.package_arch}}
+      architecture: ${{matrix.architecture}}
+      download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+    secrets: inherit

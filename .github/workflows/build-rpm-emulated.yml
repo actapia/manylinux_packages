@@ -36,7 +36,7 @@ on:
 
 jobs:
     build-emulated:
-      name: Build on emulated ${{matrix.architecture}} Linux platform
+      name: Build on emulated ${{inputs.architecture}} Linux platform
       # strategy:
       #   matrix:
       #     architecture: [ppc64le, s390x, i386]
@@ -125,7 +125,7 @@ jobs:
           id: artifact-upload
           uses: actions/upload-artifact@v4
           with:
-            name: ${{matrix.architecture}}
+            name: ${{inputs.architecture}}
             path: emulated-out/rpmbuild/RPMS/
             if-no-files-found: error
             retention-days: 1
