@@ -51,7 +51,6 @@ jobs:
   build-emulated:
     uses: ./.github/workflows/build-rpm-emulated.yml
     needs: [build-srpm]
-    if: false
     strategy:
       matrix:
         architecture: [ppc64le, s390x, i386]
