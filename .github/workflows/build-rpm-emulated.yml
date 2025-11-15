@@ -116,10 +116,11 @@ jobs:
 
         - name: Sign RPMs
           run: >
-            find /root/rpmbuild/RPMS/ -name '*.rpm' -exec
+            docker exec ${{env.container_id}} sh -c
+            'find /root/rpmbuild/RPMS/ -name "*.rpm" -exec
             rpm --define "_gpg_name ${{inputs.key-name}}
             <${{inputs.key-email}}>"
-            --addsign {} \;          
+            --addsign {} \;'
 
         - name: Upload RPMs
           id: artifact-upload
