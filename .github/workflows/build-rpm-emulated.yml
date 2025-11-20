@@ -59,21 +59,23 @@ jobs:
       #         container: quay.io/pypa/manylinux_2_28_i686
       runs-on: ${{ inputs.runner }}
       steps:
-        - name: Free Disk Space (Ubuntu)
-          uses: jlumbroso/free-disk-space@main
-          with:
-            # this might remove tools that are actually needed,
-            # if set to "true" but frees about 6 GB
-            tool-cache: true
+        - name: Example
+          run: echo 'Hello, world!'
+        # - name: Free Disk Space (Ubuntu)
+        #   uses: jlumbroso/free-disk-space@main
+        #   with:
+        #     # this might remove tools that are actually needed,
+        #     # if set to "true" but frees about 6 GB
+        #     tool-cache: true
             
-            # all of these default to true, but feel free to set to
-            # "false" if necessary for your workflow
-            android: true
-            dotnet: true
-            haskell: true
-            large-packages: true
-            docker-images: true
-            swap-storage: true
+        #     # all of these default to true, but feel free to set to
+        #     # "false" if necessary for your workflow
+        #     android: true
+        #     dotnet: true
+        #     haskell: true
+        #     large-packages: true
+        #     docker-images: true
+        #     swap-storage: true
         
         # - name: Set up QEMU
         #   uses: docker/setup-qemu-action@v3
