@@ -1,6 +1,6 @@
 Name:           ncbi-cxx-toolkit
 Version:        29.6.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Bioinformatics libraries for C++ from NCBI
 
 License:        Public Domain
@@ -1342,12 +1342,6 @@ This package contains the C++ header files for %{name}.
 %{_includedir}/ncbi-tools++/misc
 %{_includedir}/ncbi-tools++/misc/discrepancy
 %{_includedir}/ncbi-tools++/misc/discrepancy/testnames.int
-%{_libdir}/libct_ftds14.a
-%{_libdir}/libdbsnp_ptis.a
-%{_libdir}/libodbc_ftds14.a
-%{_libdir}/libtds_ftds100.a
-%{_libdir}/libtds_ftds14.a
-%{_libdir}/libtds_ut_common_ftds14.a
 %{_includedir}/ncbi-tools++/algo
 %{_includedir}/ncbi-tools++/algo/align
 %{_includedir}/ncbi-tools++/algo/align/advanced_cleanup
@@ -7446,6 +7440,23 @@ This package contains the C++ header files for %{name}.
 %{_includedir}/ncbi-tools++/build-system/project_tree_builder/msvc71_project_module.hpp
 %{_includedir}/ncbi-tools++/build-system/project_tree_builder/msvc71_project__.hpp
 
+%package static
+Summary: Static libraries for %{name}
+
+%description static
+This package contains the static libraries for %{name}.
+
+%files static
+%{_libdir}/libct_ftds14.a
+%{_libdir}/libdbsnp_ptis.a
+%{_libdir}/libodbc_ftds14.a
+%{_libdir}/libtds_ftds100.a
+%{_libdir}/libtds_ftds14.a
+%{_libdir}/libtds_ut_common_ftds14.a
+
+
 %changelog
+* Thu Nov 20 2025 Andrew Tapia <andrew.tapia@uky.edu> - 29.6.0-2
+- Move static libraries to new static subpackage.
 * Fri Oct 10 2025 Andrew Tapia <andrew.tapia@uky.edu> - 29.6.0-1
 - Initial version of package.
