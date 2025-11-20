@@ -28,10 +28,9 @@ jobs:
       package-name: ncbi-cxx-toolkit
       download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
     secrets: inherit
-      
-      
+
   build-native:
-    uses: ./.github/workflows/build-rpm-native.yml
+    uses: ./.github/workflows/build-rpm-emulated.yml
     needs: [build-srpm]
     strategy:
       matrix:
@@ -51,6 +50,7 @@ jobs:
       container: ${{matrix.container}}
       architecture: ${{matrix.architecture}}      
       download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+      runner: $((matrix.runner}}
     secrets: inherit
       
   build-emulated:

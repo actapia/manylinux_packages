@@ -25,14 +25,18 @@ on:
         required: true
         type: string
       binfmt_arch:
-        required: true
-        type: string
-      package_arch:
-        required: true
+        required: false
         type: string
       download:
         default: false
         type: boolean
+      native:
+        required: true
+        type: boolean
+      runner:
+        required: true
+        type: string
+        
 
 jobs:
     build-emulated:
@@ -53,10 +57,27 @@ jobs:
       #         binfmt_arch: 386
       #         package_arch: x86_64
       #         container: quay.io/pypa/manylinux_2_28_i686
-      runs-on: ubuntu-latest
+      runs-on: ${{ inputs.runner }}
       steps:
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          # this might remove tools that are actually needed,
+          # if set to "true" but frees about 6 GB
+          tool-cache: true
+          
+          # all of these default to true, but feel free to set to
+          # "false" if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+        
         - name: Set up QEMU
           uses: docker/setup-qemu-action@v3
+          if: ${{ ! inputs.native }}
           with:
             platforms: ${{inputs.binfmt_arch}}
 
