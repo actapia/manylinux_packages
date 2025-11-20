@@ -56,106 +56,104 @@ jobs:
       #         container: quay.io/pypa/manylinux_2_28_i686
       runs-on: ${{ inputs.runner }}
       steps:
-        - name: Example
-          run: echo 'Hello, world!'
-        # - name: Free Disk Space (Ubuntu)
-        #   uses: jlumbroso/free-disk-space@main
-        #   with:
-        #     # this might remove tools that are actually needed,
-        #     # if set to "true" but frees about 6 GB
-        #     tool-cache: true
+        - name: Free Disk Space (Ubuntu)
+          uses: jlumbroso/free-disk-space@main
+          with:
+            # this might remove tools that are actually needed,
+            # if set to "true" but frees about 6 GB
+            tool-cache: true
             
-        #     # all of these default to true, but feel free to set to
-        #     # "false" if necessary for your workflow
-        #     android: true
-        #     dotnet: true
-        #     haskell: true
-        #     large-packages: true
-        #     docker-images: true
-        #     swap-storage: true
+            # all of these default to true, but feel free to set to
+            # "false" if necessary for your workflow
+            android: true
+            dotnet: true
+            haskell: true
+            large-packages: true
+            docker-images: true
+            swap-storage: true
         
-        # - name: Set up QEMU
-        #   uses: docker/setup-qemu-action@v3
-        #   if: ${{ ! inputs.native }}
-        #   with:
-        #     platforms: ${{inputs.binfmt_arch}}
+        - name: Set up QEMU
+          uses: docker/setup-qemu-action@v3
+          if: ${{ ! inputs.native }}
+          with:
+            platforms: ${{inputs.binfmt_arch}}
 
-        # - name: Make output directory
-        #   run: mkdir "emulated-out"
+        - name: Make output directory
+          run: mkdir "emulated-out"
 
-        # - name: Start docker container
-        #   run: >-          
-        #     echo container_id="$(docker run -di -v "$PWD/emulated-out:/root"
-        #     ${{inputs.container}})" >> "$GITHUB_ENV"
+        - name: Start docker container
+          run: >-          
+            echo container_id="$(docker run -di -v "$PWD/emulated-out:/root"
+            ${{inputs.container}})" >> "$GITHUB_ENV"
 
-        # - name: Install rpm build tools
-        #   run: >
-        #     docker exec ${{env.container_id}} dnf -y install rpm-build rpm-devel
-        #     rpmdevtools rpm-sign
+        - name: Install rpm build tools
+          run: >
+            docker exec ${{env.container_id}} dnf -y install rpm-build rpm-devel
+            rpmdevtools rpm-sign
 
-        # - name: Add GPG key
-        #   run: >
-        #     docker exec ${{env.container_id}} sh -c
-        #     "echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import"
+        - name: Add GPG key
+          run: >
+            docker exec ${{env.container_id}} sh -c
+            "echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import"
 
-        # - name: Export public key
-        #   run: >
-        #     docker exec ${{env.container_id}} sh -c
-        #     "gpg --export -a '${{inputs.key-email}}' > public.asc"
+        - name: Export public key
+          run: >
+            docker exec ${{env.container_id}} sh -c
+            "gpg --export -a '${{inputs.key-email}}' > public.asc"
 
-        # - name: Import public key for signing
-        #   run: docker exec ${{env.container_id}} rpm --import public.asc
+        - name: Import public key for signing
+          run: docker exec ${{env.container_id}} rpm --import public.asc
 
-        # - name: Build rpm buildtree
-        #   run: docker exec -w /root ${{env.container_id}} rpmdev-setuptree        
+        - name: Build rpm buildtree
+          run: docker exec -w /root ${{env.container_id}} rpmdev-setuptree        
 
-        # - name: Download SRPM
-        #   uses: actions/download-artifact@v5
-        #   with:
-        #     name: ${{inputs.srpm-name}}
+        - name: Download SRPM
+          uses: actions/download-artifact@v5
+          with:
+            name: ${{inputs.srpm-name}}
 
-        # - name: Move SRPM to container
-        #   run: mv ${{inputs.package-name}}*.src.rpm emulated-out/
+        - name: Move SRPM to container
+          run: mv ${{inputs.package-name}}*.src.rpm emulated-out/
 
-        # - name: Move SRPM to rpm buildtree
-        #   run: >-
-        #     docker exec -w /root ${{env.container_id}} sh -c
-        #     'mv ${{inputs.package-name}}*.src.rpm rpmbuild/SRPMS/'
+        - name: Move SRPM to rpm buildtree
+          run: >-
+            docker exec -w /root ${{env.container_id}} sh -c
+            'mv ${{inputs.package-name}}*.src.rpm rpmbuild/SRPMS/'
 
-        # - name: Install build dependencies
-        #   run: >
-        #     docker exec ${{env.container_id}} sh -c
-        #     'dnf builddep -y
-        #     /root/rpmbuild/SRPMS/${{inputs.package-name}}*.src.rpm'
+        - name: Install build dependencies
+          run: >
+            docker exec ${{env.container_id}} sh -c
+            'dnf builddep -y
+            /root/rpmbuild/SRPMS/${{inputs.package-name}}*.src.rpm'
 
-        # - name: Build binary RPMs
-        #   run: >
-        #     docker exec ${{env.container_id}} sh -c
-        #     'rpmbuild --rebuild
-        #     /root/rpmbuild/SRPMS/${{inputs.package-name}}*.src.rpm'
+        - name: Build binary RPMs
+          run: >
+            docker exec ${{env.container_id}} sh -c
+            'rpmbuild --rebuild
+            /root/rpmbuild/SRPMS/${{inputs.package-name}}*.src.rpm'
 
-        # - name: Sign RPMs
-        #   run: >
-        #     docker exec ${{env.container_id}} sh -c
-        #     'find /root/rpmbuild/RPMS/ -name "*.rpm" -exec
-        #     rpm --define "_gpg_name ${{inputs.key-name}}
-        #     <${{inputs.key-email}}>"
-        #     --addsign {} \;'
+        - name: Sign RPMs
+          run: >
+            docker exec ${{env.container_id}} sh -c
+            'find /root/rpmbuild/RPMS/ -name "*.rpm" -exec
+            rpm --define "_gpg_name ${{inputs.key-name}}
+            <${{inputs.key-email}}>"
+            --addsign {} \;'
 
-        # - name: Upload RPMs
-        #   id: artifact-upload
-        #   uses: actions/upload-artifact@v4
-        #   with:
-        #     name: ${{inputs.architecture}}
-        #     path: emulated-out/rpmbuild/RPMS/
-        #     if-no-files-found: error
-        #     retention-days: 1
-        #     overwrite: true
+        - name: Upload RPMs
+          id: artifact-upload
+          uses: actions/upload-artifact@v4
+          with:
+            name: ${{inputs.architecture}}
+            path: emulated-out/rpmbuild/RPMS/
+            if-no-files-found: error
+            retention-days: 1
+            overwrite: true
 
-        # - name: Download to RPM repo
-        #   if: ${{ inputs.download }}
-        #   run: >
-        #     curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
-        #     https://www.cs.uky.edu/~acta225/ci_get/get.php
-        #     -d "repo=${{github.repository}}"
-        #     -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"
+        - name: Download to RPM repo
+          if: ${{ inputs.download }}
+          run: >
+            curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
+            https://www.cs.uky.edu/~acta225/ci_get/get.php
+            -d "repo=${{github.repository}}"
+            -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"
