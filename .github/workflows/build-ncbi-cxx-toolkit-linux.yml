@@ -29,312 +29,312 @@ jobs:
       download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
     secrets: inherit
 
-  build-native:
-    uses: ./.github/workflows/build-rpm-emulated.yml
-    needs: [build-srpm]
-    strategy:
-      matrix:
-        architecture: [x86_64, aarch64]
-        include:
-          - architecture: x86_64
-            runner: ubuntu-latest
-            container: quay.io/pypa/manylinux_2_28_x86_64
-          - architecture: aarch64
-            runner: ubuntu-24.04-arm
-            container: quay.io/pypa/manylinux_2_28_aarch64    
-    with:
-      key-email: andrew.tapia@uky.edu
-      key-name: Andrew Tapia
-      package-name: ncbi-cxx-toolkit
-      runner: ${{matrix.runner}}
-      container: ${{matrix.container}}
-      architecture: ${{matrix.architecture}}      
-      download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
-      runner: $((matrix.runner}}
-    secrets: inherit
+  # build-native:
+  #   uses: ./.github/workflows/build-rpm-emulated.yml
+  #   needs: [build-srpm]
+  #   strategy:
+  #     matrix:
+  #       architecture: [x86_64, aarch64]
+  #       include:
+  #         - architecture: x86_64
+  #           runner: ubuntu-latest
+  #           container: quay.io/pypa/manylinux_2_28_x86_64
+  #         - architecture: aarch64
+  #           runner: ubuntu-24.04-arm
+  #           container: quay.io/pypa/manylinux_2_28_aarch64    
+  #   with:
+  #     key-email: andrew.tapia@uky.edu
+  #     key-name: Andrew Tapia
+  #     package-name: ncbi-cxx-toolkit
+  #     runner: ${{matrix.runner}}
+  #     container: ${{matrix.container}}
+  #     architecture: ${{matrix.architecture}}      
+  #     download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+  #     runner: $((matrix.runner}}
+  #   secrets: inherit
       
-  build-emulated:
-    uses: ./.github/workflows/build-rpm-emulated.yml
-    needs: [build-srpm]
-    if: false
-    strategy:
-      matrix:
-        architecture: [ppc64le, s390x, i386]
-        include:
-          - architecture: ppc64le
-            binfmt_arch: ppc64le
-            package_arch: powerpc64le            
-            container: quay.io/pypa/manylinux_2_28_ppc64le
-          - architecture: s390x
-            binfmt_arch: s390x
-            package_arch: s390x
-            container: quay.io/pypa/manylinux_2_28_s390x
-          - architecture: i386
-            binfmt_arch: 386
-            package_arch: x86_64
-            container: quay.io/pypa/manylinux_2_28_i686
-    with:
-      key-email: andrew.tapia@uky.edu
-      key-name: Andrew Tapia
-      package-name: ncbi-cxx-toolkit
-      runner: ${{matrix.runner}}
-      container: ${{matrix.container}}
-      binfmt_arch:  ${{matrix.binfmt_arch}}
-      package_arch: ${{matrix.package_arch}}
-      architecture: ${{matrix.architecture}}
-      download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
-    secrets: inherit
+  # build-emulated:
+  #   uses: ./.github/workflows/build-rpm-emulated.yml
+  #   needs: [build-srpm]
+  #   if: false
+  #   strategy:
+  #     matrix:
+  #       architecture: [ppc64le, s390x, i386]
+  #       include:
+  #         - architecture: ppc64le
+  #           binfmt_arch: ppc64le
+  #           package_arch: powerpc64le            
+  #           container: quay.io/pypa/manylinux_2_28_ppc64le
+  #         - architecture: s390x
+  #           binfmt_arch: s390x
+  #           package_arch: s390x
+  #           container: quay.io/pypa/manylinux_2_28_s390x
+  #         - architecture: i386
+  #           binfmt_arch: 386
+  #           package_arch: x86_64
+  #           container: quay.io/pypa/manylinux_2_28_i686
+  #   with:
+  #     key-email: andrew.tapia@uky.edu
+  #     key-name: Andrew Tapia
+  #     package-name: ncbi-cxx-toolkit
+  #     runner: ${{matrix.runner}}
+  #     container: ${{matrix.container}}
+  #     binfmt_arch:  ${{matrix.binfmt_arch}}
+  #     package_arch: ${{matrix.package_arch}}
+  #     architecture: ${{matrix.architecture}}
+  #     download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+  #   secrets: inherit
 
-  build-cross:
-    name: Build cross-compiled binaries for ${{matrix.architecture}} Linux
-    needs: [build-srpm, build-native]
-    strategy:
-      matrix:
-        architecture: [ppc64le, s390x, i386]
-        include:
-          - architecture: ppc64le
-            binfmt_arch: ppc64le
-            package_arch: powerpc64le
-            proc_arch: powerpc64le
-            target_arch: ppc64le
-            container: quay.io/pypa/manylinux_2_28_ppc64le
-          - architecture: s390x
-            binfmt_arch: s390x
-            package_arch: s390x
-            proc_arch: s390x
-            target_arch: s390x
-            container: quay.io/pypa/manylinux_2_28_s390x
-          - architecture: i386
-            binfmt_arch: 386
-            package_arch: x86_64
-            proc_arch: i686
-            target_arch: i686
-            container: quay.io/pypa/manylinux_2_28_i686        
-    runs-on: ubuntu-latest
-    steps:
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
-          tool-cache: true
+  # build-cross:
+  #   name: Build cross-compiled binaries for ${{matrix.architecture}} Linux
+  #   needs: [build-srpm, build-native]
+  #   strategy:
+  #     matrix:
+  #       architecture: [ppc64le, s390x, i386]
+  #       include:
+  #         - architecture: ppc64le
+  #           binfmt_arch: ppc64le
+  #           package_arch: powerpc64le
+  #           proc_arch: powerpc64le
+  #           target_arch: ppc64le
+  #           container: quay.io/pypa/manylinux_2_28_ppc64le
+  #         - architecture: s390x
+  #           binfmt_arch: s390x
+  #           package_arch: s390x
+  #           proc_arch: s390x
+  #           target_arch: s390x
+  #           container: quay.io/pypa/manylinux_2_28_s390x
+  #         - architecture: i386
+  #           binfmt_arch: 386
+  #           package_arch: x86_64
+  #           proc_arch: i686
+  #           target_arch: i686
+  #           container: quay.io/pypa/manylinux_2_28_i686        
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Free Disk Space (Ubuntu)
+  #       uses: jlumbroso/free-disk-space@main
+  #       with:
+  #         # this might remove tools that are actually needed,
+  #         # if set to "true" but frees about 6 GB
+  #         tool-cache: true
           
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
+  #         # all of these default to true, but feel free to set to
+  #         # "false" if necessary for your workflow
+  #         android: true
+  #         dotnet: true
+  #         haskell: true
+  #         large-packages: true
+  #         docker-images: true
+  #         swap-storage: true
           
-      - uses: actions/checkout@v5
+  #     - uses: actions/checkout@v5
       
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: ${{matrix.binfmt_arch}}
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v3
+  #       with:
+  #         platforms: ${{matrix.binfmt_arch}}
 
-      - name: Install podman
-        run: sudo apt update && sudo apt install podman
+  #     - name: Install podman
+  #       run: sudo apt update && sudo apt install podman
 
-      # - name: Create emulated out dir
-      #   run: mkdir "emulated-out"
+  #     # - name: Create emulated out dir
+  #     #   run: mkdir "emulated-out"
 
-      - name: Start emulated container
-        run: >-
-          echo emulated_container_id="$(
-          sudo podman run -di
-          ${{matrix.container}}
-          )" >> "$GITHUB_ENV"
+  #     - name: Start emulated container
+  #       run: >-
+  #         echo emulated_container_id="$(
+  #         sudo podman run -di
+  #         ${{matrix.container}}
+  #         )" >> "$GITHUB_ENV"
 
-      - name: Mount emulated container
-        run: >
-          echo cross_mount="$(sudo podman mount ${{env.emulated_container_id}})"
-          >> "$GITHUB_ENV"          
+  #     - name: Mount emulated container
+  #       run: >
+  #         echo cross_mount="$(sudo podman mount ${{env.emulated_container_id}})"
+  #         >> "$GITHUB_ENV"          
             
-      - name: Install emulated rpm build tools and symlinks
-        run: >
-          sudo podman exec ${{env.emulated_container_id}}
-          dnf -y install rpm-build rpm-devel rpmdevtools symlinks
+  #     - name: Install emulated rpm build tools and symlinks
+  #       run: >
+  #         sudo podman exec ${{env.emulated_container_id}}
+  #         dnf -y install rpm-build rpm-devel rpmdevtools symlinks
         
-      - name: Build emulated rpm buildtree
-        run: >
-          sudo podman exec -w /root ${{env.emulated_container_id}}
-          rpmdev-setuptree
+  #     - name: Build emulated rpm buildtree
+  #       run: >
+  #         sudo podman exec -w /root ${{env.emulated_container_id}}
+  #         rpmdev-setuptree
 
-      - name: Download SRPM
-        uses: actions/download-artifact@v5
-        with:
-          name: srpm
+  #     - name: Download SRPM
+  #       uses: actions/download-artifact@v5
+  #       with:
+  #         name: srpm
 
-      - name: Copy SRPM to emulated container
-        run: >
-          sudo cp ncbi-cxx-toolkit*.src.rpm
-          "${{env.cross_mount}}/root/rpmbuild/SRPMS/"
+  #     - name: Copy SRPM to emulated container
+  #       run: >
+  #         sudo cp ncbi-cxx-toolkit*.src.rpm
+  #         "${{env.cross_mount}}/root/rpmbuild/SRPMS/"
 
-      - name: Install build dependencies on emulated container
-        run: >
-          sudo podman exec ${{env.emulated_container_id}} sh -c
-          'dnf builddep -y  /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm'
+  #     - name: Install build dependencies on emulated container
+  #       run: >
+  #         sudo podman exec ${{env.emulated_container_id}} sh -c
+  #         'dnf builddep -y  /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm'
 
-      # - name: Patch libstdc++.so in emulated container
-      #   run: >
+  #     # - name: Patch libstdc++.so in emulated container
+  #     #   run: >
 
-      - name: Copy toolchain file creation scripts
-        run: >
-          sudo cp cross-scripts/*.sh "${{env.cross_mount}}/root/"
+  #     - name: Copy toolchain file creation scripts
+  #       run: >
+  #         sudo cp cross-scripts/*.sh "${{env.cross_mount}}/root/"
 
-      - name: Change emulated container absolute symlinks to relative symlinks
-        run: >
-          sudo podman exec ${{env.emulated_container_id}} symlinks -cr .
+  #     - name: Change emulated container absolute symlinks to relative symlinks
+  #       run: >
+  #         sudo podman exec ${{env.emulated_container_id}} symlinks -cr .
 
-      - name: Create out dir
-        run: mkdir "out"
+  #     - name: Create out dir
+  #       run: mkdir "out"
 
-      - name: Start native container
-        run: >
-          echo
-          native_container_id="$(
-          sudo podman run -di
-          -v "${{env.cross_mount}}:/cross_root/"
-          -v "$PWD/out:/root"
-          quay.io/pypa/manylinux_2_28_x86_64
-          )" >> "$GITHUB_ENV"
+  #     - name: Start native container
+  #       run: >
+  #         echo
+  #         native_container_id="$(
+  #         sudo podman run -di
+  #         -v "${{env.cross_mount}}:/cross_root/"
+  #         -v "$PWD/out:/root"
+  #         quay.io/pypa/manylinux_2_28_x86_64
+  #         )" >> "$GITHUB_ENV"
 
-      - name: Mount native container
-        run: >
-          echo native_mount="$(sudo podman mount ${{env.native_container_id}})"
-          >> "$GITHUB_ENV"
+  #     - name: Mount native container
+  #       run: >
+  #         echo native_mount="$(sudo podman mount ${{env.native_container_id}})"
+  #         >> "$GITHUB_ENV"
 
-      - name: Generate toolchain file using emulated container
-        run: >
-          sudo podman exec -w /root ${{env.emulated_container_id}}
-          bash make_toolchain_file.sh -a ${{matrix.package_arch}}
-          -P ${{matrix.proc_arch}} -p /cross_root | sudo tee
-          out/toolchain.cmake
+  #     - name: Generate toolchain file using emulated container
+  #       run: >
+  #         sudo podman exec -w /root ${{env.emulated_container_id}}
+  #         bash make_toolchain_file.sh -a ${{matrix.package_arch}}
+  #         -P ${{matrix.proc_arch}} -p /cross_root | sudo tee
+  #         out/toolchain.cmake
           
 
-      - name: Install native rpm build tools
-        run: >
-          sudo podman exec ${{env.native_container_id}}
-          dnf -y install rpm-build rpm-devel rpmdevtools rpm-sign
+  #     - name: Install native rpm build tools
+  #       run: >
+  #         sudo podman exec ${{env.native_container_id}}
+  #         dnf -y install rpm-build rpm-devel rpmdevtools rpm-sign
 
-      - name: Add GPG key
-        run: >
-          sudo podman exec ${{env.native_container_id}} sh -c
-          "echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import"
+  #     - name: Add GPG key
+  #       run: >
+  #         sudo podman exec ${{env.native_container_id}} sh -c
+  #         "echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import"
 
-      - name: Export public key
-        run: >
-          sudo podman exec ${{env.native_container_id}} sh -c
-          "gpg --export -a '$KEY_EMAIL' > public.asc"
+  #     - name: Export public key
+  #       run: >
+  #         sudo podman exec ${{env.native_container_id}} sh -c
+  #         "gpg --export -a '$KEY_EMAIL' > public.asc"
 
-      - name: Import public key for signing
-        run: >
-          sudo podman exec ${{env.native_container_id}} rpm --import public.asc
+  #     - name: Import public key for signing
+  #       run: >
+  #         sudo podman exec ${{env.native_container_id}} rpm --import public.asc
 
-      - name: Build native rpm buildtree
-        run: >
-          sudo podman exec -w /root ${{env.native_container_id}}
-          rpmdev-setuptree
+  #     - name: Build native rpm buildtree
+  #       run: >
+  #         sudo podman exec -w /root ${{env.native_container_id}}
+  #         rpmdev-setuptree
 
-      - name: Move SRPM to native container
-        run: >
-          sudo mv ncbi-cxx-toolkit*.rpm
-          "out/rpmbuild/SRPMS/"
+  #     - name: Move SRPM to native container
+  #       run: >
+  #         sudo mv ncbi-cxx-toolkit*.rpm
+  #         "out/rpmbuild/SRPMS/"
 
-      - name: Make rpmbuild stage
-        run: mkdir -p rpmbuild/RPMS
+  #     - name: Make rpmbuild stage
+  #       run: mkdir -p rpmbuild/RPMS
 
-      - name: Download native RPM
-        uses: actions/download-artifact@v5
-        with:
-          name: x86_64
-          path: rpmbuild/RPMS/
+  #     - name: Download native RPM
+  #       uses: actions/download-artifact@v5
+  #       with:
+  #         name: x86_64
+  #         path: rpmbuild/RPMS/
 
-      - name: Remove unneeded debug RPMs.
-        run: >
-          sudo rm rpmbuild/RPMS/x86_64/*debug*
+  #     - name: Remove unneeded debug RPMs.
+  #       run: >
+  #         sudo rm rpmbuild/RPMS/x86_64/*debug*
 
-      - name: Copy native RPMs
-        run: >
-          sudo mv rpmbuild/RPMS/x86_64/*.rpm out
+  #     - name: Copy native RPMs
+  #       run: >
+  #         sudo mv rpmbuild/RPMS/x86_64/*.rpm out
           
-      - name: Install native RPM dependencies on native container
-        run: >          
-          sudo podman exec ${{env.native_container_id}} sh -c
-          'dnf -y localinstall /root/*.rpm'
+  #     - name: Install native RPM dependencies on native container
+  #       run: >          
+  #         sudo podman exec ${{env.native_container_id}} sh -c
+  #         'dnf -y localinstall /root/*.rpm'
 
-      # - name: Install native RPMs on native container
-      #   run: >          
-      #     sudo podman exec ${{env.native_container_id}} sh -c
-      #     'rpm -i /root/*.rpm'
+  #     # - name: Install native RPMs on native container
+  #     #   run: >          
+  #     #     sudo podman exec ${{env.native_container_id}} sh -c
+  #     #     'rpm -i /root/*.rpm'
           
-      - name: Copy manylinux_packages repo file to native container
-        run: sudo cp manylinux_packages.repo out
+  #     - name: Copy manylinux_packages repo file to native container
+  #       run: sudo cp manylinux_packages.repo out
 
-      - name: Install manylinux_packages repo to native container
-        run: >
-          sudo podman exec ${{env.native_container_id}}
-          cp /root/manylinux_packages.repo /etc/yum.repos.d/
+  #     - name: Install manylinux_packages repo to native container
+  #       run: >
+  #         sudo podman exec ${{env.native_container_id}}
+  #         cp /root/manylinux_packages.repo /etc/yum.repos.d/
 
-      - name: Install cross compiler for ${{matrix.architecture}}
-        run: >
-          sudo podman exec ${{env.native_container_id}}
-          dnf -y install gcc-${{matrix.package_arch}}-linux-gnu
-          gcc-c++-${{matrix.package_arch}}-linux-gnu
+  #     - name: Install cross compiler for ${{matrix.architecture}}
+  #       run: >
+  #         sudo podman exec ${{env.native_container_id}}
+  #         dnf -y install gcc-${{matrix.package_arch}}-linux-gnu
+  #         gcc-c++-${{matrix.package_arch}}-linux-gnu
         
-      - name: Install build dependencies on native container
-        run: >
-          sudo podman exec ${{env.native_container_id}} sh -c
-          'dnf builddep -y  /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm'
+  #     - name: Install build dependencies on native container
+  #       run: >
+  #         sudo podman exec ${{env.native_container_id}} sh -c
+  #         'dnf builddep -y  /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm'
 
-      - name: Link datatool into /usr/local/bin for native container
-        run: >
-          sudo podman exec ${{env.native_container_id}} sh -c
-          'ln -s /opt/ncbi-cxx-toolkit*/bin/datatool /usr/local/bin/datatool'
+  #     - name: Link datatool into /usr/local/bin for native container
+  #       run: >
+  #         sudo podman exec ${{env.native_container_id}} sh -c
+  #         'ln -s /opt/ncbi-cxx-toolkit*/bin/datatool /usr/local/bin/datatool'
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}        
+  #     - name: Setup tmate session
+  #       uses: mxschmitt/action-tmate@v3
+  #       if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}        
 
-      - name: Build binary RPMs
-        run: >
-          sudo podman exec ${{env.native_container_id}} sh -c
-          'td="$(mktemp -d)";
-          ln -s /usr/bin/${{matrix.proc_arch}}-linux-gnu-objcopy "$td"/objcopy;
-          export PATH="$td:$PATH";
-          rpmbuild --target ${{matrix.target_arch}}-redhat-linux --rebuild
-          /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm --define
-          "cmake_toolchain /root/toolchain.cmake";'
+  #     - name: Build binary RPMs
+  #       run: >
+  #         sudo podman exec ${{env.native_container_id}} sh -c
+  #         'td="$(mktemp -d)";
+  #         ln -s /usr/bin/${{matrix.proc_arch}}-linux-gnu-objcopy "$td"/objcopy;
+  #         export PATH="$td:$PATH";
+  #         rpmbuild --target ${{matrix.target_arch}}-redhat-linux --rebuild
+  #         /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm --define
+  #         "cmake_toolchain /root/toolchain.cmake";'
 
-      - name: Sign RPMs
-        run: >
-          sudo podman exec ${{env.native_container_id}}
-          find /root/rpmbuild/RPMS/ -name '*.rpm' -exec
-          rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
-          --addsign {} \;
+  #     - name: Sign RPMs
+  #       run: >
+  #         sudo podman exec ${{env.native_container_id}}
+  #         find /root/rpmbuild/RPMS/ -name '*.rpm' -exec
+  #         rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
+  #         --addsign {} \;
 
-      - name: Change RPM owners
-        run: >
-          sudo chown -R "$USER" out
+  #     - name: Change RPM owners
+  #       run: >
+  #         sudo chown -R "$USER" out
     
-      - name: Upload RPMs
-        id: artifact-upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{matrix.architecture}}
-          path: out/rpmbuild/RPMS/
-          if-no-files-found: error
-          retention-days: 1
-          overwrite: true
+  #     - name: Upload RPMs
+  #       id: artifact-upload
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ${{matrix.architecture}}
+  #         path: out/rpmbuild/RPMS/
+  #         if-no-files-found: error
+  #         retention-days: 1
+  #         overwrite: true
 
-      - name: Download to RPM repo
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
-        run: >
-          curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
-          https://www.cs.uky.edu/~acta225/ci_get/get.php
-          -d "repo=${{github.repository}}"
-          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"        
+  #     - name: Download to RPM repo
+  #       if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+  #       run: >
+  #         curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
+  #         https://www.cs.uky.edu/~acta225/ci_get/get.php
+  #         -d "repo=${{github.repository}}"
+  #         -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"        
           
