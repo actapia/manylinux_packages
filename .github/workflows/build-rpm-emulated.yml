@@ -1,4 +1,4 @@
-name: build-rpm-native
+name: build-rpm-emulated
 
 on:
   workflow_call:
