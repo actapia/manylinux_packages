@@ -33,9 +33,6 @@ on:
       native:
         required: true
         type: boolean
-      runner:
-        required: true
-        type: string
         
 
 jobs:
