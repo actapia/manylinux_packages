@@ -50,7 +50,6 @@ jobs:
       container: ${{matrix.container}}
       architecture: ${{matrix.architecture}}      
       download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
-      runner: $((matrix.runner}}
       native: true
     secrets: inherit
       
