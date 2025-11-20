@@ -29,7 +29,7 @@ jobs:
       download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
     secrets: inherit
 
-  build-native:
+  build-em:
     uses: ./.github/workflows/build-rpm-emulated.yml
     needs: [build-srpm]
     strategy:
@@ -51,6 +51,7 @@ jobs:
       architecture: ${{matrix.architecture}}      
       download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
       runner: $((matrix.runner}}
+      native: true
     secrets: inherit
       
   # build-emulated:
