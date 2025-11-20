@@ -29,29 +29,29 @@ jobs:
       download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
     secrets: inherit
 
-  # build-native:
-  #   uses: ./.github/workflows/build-rpm-emulated.yml
-  #   needs: [build-srpm]
-  #   strategy:
-  #     matrix:
-  #       architecture: [x86_64, aarch64]
-  #       include:
-  #         - architecture: x86_64
-  #           runner: ubuntu-latest
-  #           container: quay.io/pypa/manylinux_2_28_x86_64
-  #         - architecture: aarch64
-  #           runner: ubuntu-24.04-arm
-  #           container: quay.io/pypa/manylinux_2_28_aarch64    
-  #   with:
-  #     key-email: andrew.tapia@uky.edu
-  #     key-name: Andrew Tapia
-  #     package-name: ncbi-cxx-toolkit
-  #     runner: ${{matrix.runner}}
-  #     container: ${{matrix.container}}
-  #     architecture: ${{matrix.architecture}}      
-  #     download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
-  #     runner: $((matrix.runner}}
-  #   secrets: inherit
+  build-native:
+    uses: ./.github/workflows/build-rpm-emulated.yml
+    needs: [build-srpm]
+    strategy:
+      matrix:
+        architecture: [x86_64, aarch64]
+        include:
+          - architecture: x86_64
+            runner: ubuntu-latest
+            container: quay.io/pypa/manylinux_2_28_x86_64
+          - architecture: aarch64
+            runner: ubuntu-24.04-arm
+            container: quay.io/pypa/manylinux_2_28_aarch64    
+    with:
+      key-email: andrew.tapia@uky.edu
+      key-name: Andrew Tapia
+      package-name: ncbi-cxx-toolkit
+      runner: ${{matrix.runner}}
+      container: ${{matrix.container}}
+      architecture: ${{matrix.architecture}}      
+      download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+      runner: $((matrix.runner}}
+    secrets: inherit
       
   # build-emulated:
   #   uses: ./.github/workflows/build-rpm-emulated.yml
