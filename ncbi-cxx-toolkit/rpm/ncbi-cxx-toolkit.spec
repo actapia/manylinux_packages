@@ -1,6 +1,6 @@
 Name:           ncbi-cxx-toolkit
 Version:        29.6.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Bioinformatics libraries for C++ from NCBI
 
 License:        Public Domain
@@ -1326,7 +1326,6 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 
 %package devel
 Summary: Development files for %{name}
-BuildArch: noarch
 
 
 %description devel
