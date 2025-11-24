@@ -1329,7 +1329,6 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 
 %package devel
 Summary: Development files for %{name}
-BuildArch: noarch
 
 
 %description devel
