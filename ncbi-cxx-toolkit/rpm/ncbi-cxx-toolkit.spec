@@ -23,10 +23,10 @@ BuildRequires:  cmake, bash
 BuildRequires:  ncbi-cxx-toolkit, cross-gcc-common
 %else
 %global toolchain_arg ""
-BuildRequires:  gcc-toolset-14-gcc, gcc-toolset-14-gcc-c++, gcc-toolset-14-libstdc++-devel, pcre-devel, bzip2-devel, zlib-devel, libzstd-devel, boost-devel, sqlite-libs, sqlite-devel
+BuildRequires:  gcc-toolset-14-gcc, gcc-toolset-14-gcc-c++, gcc-toolset-14-libstdc++-devel, pcre-devel, bzip2-devel, zlib-devel, libzstd-devel, boost-devel, sqlite-libs, sqlite-devel, lmdb-devel
 %endif
 
-Requires:       pcre, bzip2, bzip2-libs, zstd, sqlite-libs, glibc, libgcc, libgomp, libstdc++, libzstd, zlib
+Requires:       pcre, bzip2, bzip2-libs, zstd, sqlite-libs, glibc, libgcc, libgomp, libstdc++, libzstd, zlib, lmdb-libs
 
 %define _prefix /opt/ncbi-cxx-toolkit-%{version}
 
@@ -57,7 +57,7 @@ echo prefix %{_prefix}
 echo toolchain_arg %{toolchain_arg}
 echo zcf_disabled %{zcf_disabled}
 scl enable gcc-toolset-14 - <<EOF
-    bash cmake-configure --with-dll --with-install=%{_prefix} -DNCBI_DIRNAME_ARCHIVE=%{_lib} -DNCBI_COMPONENT_LocalZCF_DISABLED=%{zcf_disabled} %{toolchain_arg};
+    bash cmake-configure --with-dll --with-install=%{_prefix} --with-features=BinRelease -DNCBI_DIRNAME_ARCHIVE=%{_lib} -DNCBI_COMPONENT_LocalZCF_DISABLED=%{zcf_disabled} %{toolchain_arg};
      cd CMake*/build;
      %make_build;
 EOF
@@ -74,26 +74,27 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 
 %files
 %license LICENSE.md
+%{_bindir}/
 %{_bindir}/aalookup_unit_test
 %{_bindir}/aascan_unit_test
 %{_bindir}/ace2asn
 %{_bindir}/adapter_search
-%{_bindir}/agpconvert
 %{_bindir}/agp_count
 %{_bindir}/agp_renumber
-%{_bindir}/agp_validate
 %{_bindir}/agp_val_test
+%{_bindir}/agp_validate
+%{_bindir}/agpconvert
 %{_bindir}/align_filter_unit_test
 %{_bindir}/align_format_unit_test
 %{_bindir}/aln_build
+%{_bindir}/aln_test
 %{_bindir}/alnmgr_sample
 %{_bindir}/alnmrg
-%{_bindir}/aln_test
 %{_bindir}/alnvwr
 %{_bindir}/asn2asn
 %{_bindir}/asn_assign
-%{_bindir}/asniotest
 %{_bindir}/asn_sample
+%{_bindir}/asniotest
 %{_bindir}/asnwalk_read
 %{_bindir}/asnwalk_type
 %{_bindir}/asnwalk_write
@@ -103,31 +104,31 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/bioseq_edit_sample
 %{_bindir}/bl2seq_unit_test
 %{_bindir}/blast_dataloader_unit_test
+%{_bindir}/blast_demo
+%{_bindir}/blast_format_unit_test
+%{_bindir}/blast_formatter
+%{_bindir}/blast_sample
+%{_bindir}/blast_services_unit_test
+%{_bindir}/blast_tabular_unit_test
+%{_bindir}/blast_unit_test
 %{_bindir}/blastdb_aliastool
-%{_bindir}/blastdbcheck
-%{_bindir}/blastdbcmd
 %{_bindir}/blastdb_convert
-%{_bindir}/blastdbcp
 %{_bindir}/blastdb_format_unit_test
 %{_bindir}/blastdb_path
-%{_bindir}/blast_demo
+%{_bindir}/blastdbcheck
+%{_bindir}/blastdbcmd
+%{_bindir}/blastdbcp
 %{_bindir}/blastdiag_unit_test
 %{_bindir}/blastengine_unit_test
 %{_bindir}/blastextend_unit_test
 %{_bindir}/blastfilter_unit_test
-%{_bindir}/blast_formatter
-%{_bindir}/blast_format_unit_test
 %{_bindir}/blasthits_unit_test
 %{_bindir}/blastinput_demo
 %{_bindir}/blastinput_unit_test
 %{_bindir}/blastn
 %{_bindir}/blastoptions_unit_test
 %{_bindir}/blastp
-%{_bindir}/blast_sample
-%{_bindir}/blast_services_unit_test
 %{_bindir}/blastsetup_unit_test
-%{_bindir}/blast_tabular_unit_test
-%{_bindir}/blast_unit_test
 %{_bindir}/blastx
 %{_bindir}/blobreader
 %{_bindir}/blobrwd
@@ -151,8 +152,8 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/compact_sam
 %{_bindir}/compart
 %{_bindir}/compartp
-%{_bindir}/convert2blastmask
 %{_bindir}/conv_image
+%{_bindir}/convert2blastmask
 %{_bindir}/coretest
 %{_bindir}/cpgdemo
 %{_bindir}/ct100_array_bind
@@ -322,8 +323,8 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/dbapi_testspeed
 %{_bindir}/dbapi_unit_test
 %{_bindir}/dbcopy
-%{_bindir}/deltablast
 %{_bindir}/delta_unit_test
+%{_bindir}/deltablast
 %{_bindir}/demo_contig_assembly
 %{_bindir}/demo_gene_model
 %{_bindir}/demo_genomic_compart
@@ -340,8 +341,8 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/example_value_convert
 %{_bindir}/exon_selector
 %{_bindir}/feat_import
-%{_bindir}/feattree_sample
 %{_bindir}/feat_unit_test
+%{_bindir}/feattree_sample
 %{_bindir}/flat2asn
 %{_bindir}/flatfile_parser_integration_tests
 %{_bindir}/formatguess_unit_test
@@ -383,9 +384,9 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/id1_fetch_simple
 %{_bindir}/id2_fetch_simple
 %{_bindir}/id64_unit_test
-%{_bindir}/idmapper
 %{_bindir}/id_unit_test
 %{_bindir}/id_unit_test_bad
+%{_bindir}/idmapper
 %{_bindir}/igblastp
 %{_bindir}/image_info
 %{_bindir}/lang_query
@@ -398,8 +399,8 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/lmdb_test4
 %{_bindir}/lmdb_test5
 %{_bindir}/lmdbxx_sample
-%{_bindir}/localfinder
 %{_bindir}/local_taxon_unit_test
+%{_bindir}/localfinder
 %{_bindir}/magicblast_unit_test
 %{_bindir}/makeblastdb
 %{_bindir}/makeclusterdb
@@ -421,8 +422,8 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/netcache_client_sample
 %{_bindir}/netschedule_client_sample
 %{_bindir}/netschedule_node_sample
-%{_bindir}/netstoraged
 %{_bindir}/netstorage_gc
+%{_bindir}/netstoraged
 %{_bindir}/nmer_repeats
 %{_bindir}/ns_loader
 %{_bindir}/ntlookup_unit_test
@@ -624,14 +625,14 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/remote_blast_unit_test
 %{_bindir}/remote_cgi
 %{_bindir}/rmblast_blasthits_unit_test
-%{_bindir}/rmblastn
 %{_bindir}/rmblast_traceback_unit_test
+%{_bindir}/rmblastn
+%{_bindir}/rps_unit_test
 %{_bindir}/rpsblast
 %{_bindir}/rpstblastn
-%{_bindir}/rps_unit_test
 %{_bindir}/sample_cgi_test
-%{_bindir}/scoreblk_unit_test
 %{_bindir}/score_builder_unit_test
+%{_bindir}/scoreblk_unit_test
 %{_bindir}/sdbapi_advanced_features
 %{_bindir}/sdbapi_simple
 %{_bindir}/sdbapi_test_mt_pooling
@@ -639,6 +640,9 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/search_strategy_unit_test
 %{_bindir}/seedtop
 %{_bindir}/segmasker
+%{_bindir}/seq_entry_reassign_ids
+%{_bindir}/seq_id_unit_test
+%{_bindir}/seq_loc_unit_test
 %{_bindir}/seqalign_unit_test
 %{_bindir}/seqannot_splicer
 %{_bindir}/seqdb_demo
@@ -646,12 +650,9 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/seqdb_perf
 %{_bindir}/seqdb_tax4blast_unit_test
 %{_bindir}/seqdb_unit_test
-%{_bindir}/seq_entry_reassign_ids
-%{_bindir}/seqfeatdata_unit_test
 %{_bindir}/seqfeat_unit_test
-%{_bindir}/seq_id_unit_test
+%{_bindir}/seqfeatdata_unit_test
 %{_bindir}/seqinfosrc_unit_test
-%{_bindir}/seq_loc_unit_test
 %{_bindir}/seqmasks_io_unit_test
 %{_bindir}/seqsrc_unit_test
 %{_bindir}/seqsub_split
@@ -668,9 +669,9 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/stat_unit_test
 %{_bindir}/struct_dp_demo
 %{_bindir}/struct_util_demo
-%{_bindir}/subcheck
 %{_bindir}/sub_fuse
 %{_bindir}/sub_image
+%{_bindir}/subcheck
 %{_bindir}/subj_ranges_unit_test
 %{_bindir}/tax4blast
 %{_bindir}/taxon1_unit_test.app
@@ -743,6 +744,16 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/tds14_utf8_1
 %{_bindir}/tds14_utf8_2
 %{_bindir}/tds14_utf8_3
+%{_bindir}/test-ct100
+%{_bindir}/test-ct14
+%{_bindir}/test-db100
+%{_bindir}/test-db14
+%{_bindir}/test-odbc100
+%{_bindir}/test-odbc14
+%{_bindir}/test-reference_allele_fix
+%{_bindir}/test-shift
+%{_bindir}/test-tds100
+%{_bindir}/test-tds14
 %{_bindir}/test_algo_tree
 %{_bindir}/test_align
 %{_bindir}/test_annot_ci
@@ -765,14 +776,10 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_condvar
 %{_bindir}/test_conn_stream_pushback
 %{_bindir}/test_conn_tar
-%{_bindir}/test-ct100
-%{_bindir}/test-ct14
 %{_bindir}/test_ctransition
 %{_bindir}/test_ctransition_nlmzip
 %{_bindir}/test_ctre
 %{_bindir}/test_date
-%{_bindir}/test-db100
-%{_bindir}/test-db14
 %{_bindir}/test_diag_parser
 %{_bindir}/test_diff
 %{_bindir}/test_edit_saver
@@ -787,8 +794,8 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_fw
 %{_bindir}/test_gather_items
 %{_bindir}/test_get_console_password
-%{_bindir}/test_gridclient_stress
 %{_bindir}/test_grid_worker
+%{_bindir}/test_gridclient_stress
 %{_bindir}/test_hgvs_parser
 %{_bindir}/test_hgvs_reader
 %{_bindir}/test_histogram
@@ -814,16 +821,11 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_message_mt
 %{_bindir}/test_metaphone
 %{_bindir}/test_multipart.cgi
-%{_bindir}/test_ncbiargs
-%{_bindir}/test_ncbiargs_sample
 %{_bindir}/test_ncbi_blowfish
 %{_bindir}/test_ncbi_buffer
-%{_bindir}/test_ncbicfg
-%{_bindir}/test_ncbicgi
 %{_bindir}/test_ncbi_clog_mt
 %{_bindir}/test_ncbi_clog_mt_ctx
 %{_bindir}/test_ncbi_clog_templates
-%{_bindir}/test_ncbicntr
 %{_bindir}/test_ncbi_config
 %{_bindir}/test_ncbi_conn
 %{_bindir}/test_ncbi_conn_stream
@@ -833,17 +835,10 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_ncbi_core
 %{_bindir}/test_ncbi_crypt
 %{_bindir}/test_ncbi_dblb
-%{_bindir}/test_ncbidiag_f_mt
-%{_bindir}/test_ncbidiag_mt
-%{_bindir}/test_ncbidiag_p
 %{_bindir}/test_ncbi_disp
-%{_bindir}/test_ncbidll
 %{_bindir}/test_ncbi_download
 %{_bindir}/test_ncbi_dsock
-%{_bindir}/test_ncbiexec
-%{_bindir}/test_ncbiexpt
 %{_bindir}/test_ncbi_fast
-%{_bindir}/test_ncbifile
 %{_bindir}/test_ncbi_file_connector
 %{_bindir}/test_ncbi_ftp_connector
 %{_bindir}/test_ncbi_ftp_download
@@ -864,8 +859,6 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_ncbi_linkerd_proxy
 %{_bindir}/test_ncbi_localnet
 %{_bindir}/test_ncbi_memory_connector
-%{_bindir}/test_ncbimime
-%{_bindir}/test_ncbimtx
 %{_bindir}/test_ncbi_namedpipe
 %{_bindir}/test_ncbi_namedpipe_connector
 %{_bindir}/test_ncbi_namerd
@@ -876,7 +869,6 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_ncbi_pipe_connector
 %{_bindir}/test_ncbi_process
 %{_bindir}/test_ncbi_rate_monitor
-%{_bindir}/test_ncbireg_mt
 %{_bindir}/test_ncbi_rwstream
 %{_bindir}/test_ncbi_sendmail
 %{_bindir}/test_ncbi_server_info
@@ -885,16 +877,31 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_ncbi_service_cxx_mt
 %{_bindir}/test_ncbi_socket
 %{_bindir}/test_ncbi_socket_connector
-%{_bindir}/test_ncbistr
 %{_bindir}/test_ncbi_system
 %{_bindir}/test_ncbi_table
+%{_bindir}/test_ncbi_tree
+%{_bindir}/test_ncbi_trigger
+%{_bindir}/test_ncbi_url
+%{_bindir}/test_ncbiargs
+%{_bindir}/test_ncbiargs_sample
+%{_bindir}/test_ncbicfg
+%{_bindir}/test_ncbicgi
+%{_bindir}/test_ncbicntr
+%{_bindir}/test_ncbidiag_f_mt
+%{_bindir}/test_ncbidiag_mt
+%{_bindir}/test_ncbidiag_p
+%{_bindir}/test_ncbidll
+%{_bindir}/test_ncbiexec
+%{_bindir}/test_ncbiexpt
+%{_bindir}/test_ncbifile
+%{_bindir}/test_ncbimime
+%{_bindir}/test_ncbimtx
+%{_bindir}/test_ncbireg_mt
+%{_bindir}/test_ncbistr
 %{_bindir}/test_ncbithr
 %{_bindir}/test_ncbithr_native
 %{_bindir}/test_ncbitime
 %{_bindir}/test_ncbitime_mt
-%{_bindir}/test_ncbi_tree
-%{_bindir}/test_ncbi_trigger
-%{_bindir}/test_ncbi_url
 %{_bindir}/test_ncbiutil
 %{_bindir}/test_netcache_api
 %{_bindir}/test_netschedule_client
@@ -913,8 +920,6 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_objmgr_mt
 %{_bindir}/test_objmgr_sv
 %{_bindir}/test_objstore
-%{_bindir}/test-odbc100
-%{_bindir}/test-odbc14
 %{_bindir}/test_param_mt
 %{_bindir}/test_pcre
 %{_bindir}/test_plugins
@@ -923,12 +928,11 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_queue_mt
 %{_bindir}/test_random
 %{_bindir}/test_range_coll
-%{_bindir}/test_rangemap
 %{_bindir}/test_range_set
+%{_bindir}/test_rangemap
 %{_bindir}/test_reader_gicache
 %{_bindir}/test_reader_id1
 %{_bindir}/test_reader_pubseq
-%{_bindir}/test-reference_allele_fix
 %{_bindir}/test_regexp
 %{_bindir}/test_relloc
 %{_bindir}/test_remote_updater
@@ -953,7 +957,6 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_serial_io
 %{_bindir}/test_server
 %{_bindir}/test_server_listeners
-%{_bindir}/test-shift
 %{_bindir}/test_source_mod_parser
 %{_bindir}/test_stacktrace
 %{_bindir}/test_staticmap
@@ -962,13 +965,11 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_sub_reg
 %{_bindir}/test_table_printer
 %{_bindir}/test_tar
-%{_bindir}/test-tds100
-%{_bindir}/test-tds14
 %{_bindir}/test_tempstr
-%{_bindir}/test_threaded_client
-%{_bindir}/test_threaded_server
 %{_bindir}/test_thread_pool
 %{_bindir}/test_thread_pool_old
+%{_bindir}/test_threaded_client
+%{_bindir}/test_threaded_server
 %{_bindir}/test_timsort
 %{_bindir}/test_title
 %{_bindir}/test_tls_object
@@ -987,8 +988,8 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/test_weakref
 %{_bindir}/test_xregexp
 %{_bindir}/tls
-%{_bindir}/tracebacksearch_unit_test
 %{_bindir}/traceback_unit_test
+%{_bindir}/tracebacksearch_unit_test
 %{_bindir}/uniform_search_unit_test
 %{_bindir}/unit_test_5colftblreader
 %{_bindir}/unit_test_agp_converter
@@ -1041,20 +1042,20 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/unit_test_gtfwriter
 %{_bindir}/unit_test_gvfreader
 %{_bindir}/unit_test_hugeannot
-%{_bindir}/unit_test_idmapper
 %{_bindir}/unit_test_id_mapper
+%{_bindir}/unit_test_idmapper
 %{_bindir}/unit_test_import
 %{_bindir}/unit_test_internal_stops
 %{_bindir}/unit_test_linkage_evidence
-%{_bindir}/unit_test_location_constraint
 %{_bindir}/unit_test_loc_edit
+%{_bindir}/unit_test_location_constraint
 %{_bindir}/unit_test_mail_report
 %{_bindir}/unit_test_microarrayreader
 %{_bindir}/unit_test_mod_adder
 %{_bindir}/unit_test_mol_wt
 %{_bindir}/unit_test_newcleanupp
-%{_bindir}/unit_test_objmgr
 %{_bindir}/unit_test_obj_sniff
+%{_bindir}/unit_test_objmgr
 %{_bindir}/unit_test_orf
 %{_bindir}/unit_test_parse_text
 %{_bindir}/unit_test_polya
@@ -1094,24 +1095,25 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_bindir}/writedb_lmdb_unit_test
 %{_bindir}/writedb_unit_test
 %{_bindir}/xcompareannotsdemo
+%{_libdir}/
 %{_libdir}/libaccess.so
 %{_libdir}/libalign_format.so
 %{_libdir}/libasn_sample_lib.so
 %{_libdir}/libbasic_sample_lib.so
 %{_libdir}/libbiblio.so
 %{_libdir}/libbiotree.so
-%{_libdir}/libblast_app_util.so
-%{_libdir}/libblastdb_format.so
-%{_libdir}/libblastdb.so
-%{_libdir}/libblastinput.so
-%{_libdir}/libblast_services.so
 %{_libdir}/libblast.so
+%{_libdir}/libblast_app_util.so
+%{_libdir}/libblast_services.so
 %{_libdir}/libblast_unit_test_util.so
-%{_libdir}/libblastxml2.so
+%{_libdir}/libblastdb.so
+%{_libdir}/libblastdb_format.so
+%{_libdir}/libblastinput.so
 %{_libdir}/libblastxml.so
+%{_libdir}/libblastxml2.so
 %{_libdir}/libbz2.so
-%{_libdir}/libcdd_access.so
 %{_libdir}/libcdd.so
+%{_libdir}/libcdd_access.so
 %{_libdir}/libclog.so
 %{_libdir}/libcn3d.so
 %{_libdir}/libcobalt.so
@@ -1120,23 +1122,23 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_libdir}/libconnext.so
 %{_libdir}/libconnssl.so
 %{_libdir}/libct_ftds100.so
-%{_libdir}/libctransition_nlmzip.so
 %{_libdir}/libctransition.so
+%{_libdir}/libctransition_nlmzip.so
+%{_libdir}/libdbapi.so
 %{_libdir}/libdbapi_driver.so
 %{_libdir}/libdbapi_sample_base.so
-%{_libdir}/libdbapi.so
 %{_libdir}/libdbapi_util_blobstore.so
 %{_libdir}/libdbsnp_tooltip_service.so
 %{_libdir}/libdocsum.so
 %{_libdir}/libdtd_sample_lib.so
+%{_libdir}/libeMyNCBI_result.so
 %{_libdir}/libefetch.so
 %{_libdir}/libegquery.so
 %{_libdir}/libehistory.so
 %{_libdir}/libeinfo.so
 %{_libdir}/libelink.so
-%{_libdir}/libeMyNCBI_result.so
-%{_libdir}/libentrez2cli.so
 %{_libdir}/libentrez2.so
+%{_libdir}/libentrez2cli.so
 %{_libdir}/libentrezgene.so
 %{_libdir}/libepost.so
 %{_libdir}/libesearch.so
@@ -1154,11 +1156,11 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_libdir}/libgumbelparams.so
 %{_libdir}/libhgvs.so
 %{_libdir}/libhomologene.so
-%{_libdir}/libid1cli.so
 %{_libdir}/libid1.so
-%{_libdir}/libid2cli.so
+%{_libdir}/libid1cli.so
 %{_libdir}/libid2.so
 %{_libdir}/libid2_split.so
+%{_libdir}/libid2cli.so
 %{_libdir}/libigblast.so
 %{_libdir}/libinsdseq.so
 %{_libdir}/libjsd_sample_lib.so
@@ -1171,54 +1173,54 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_libdir}/libmedline.so
 %{_libdir}/libmim.so
 %{_libdir}/libmmdb.so
-%{_libdir}/libncbimime.so
 %{_libdir}/libncbi_xblobstorage_netcache.so
 %{_libdir}/libncbi_xcache_netcache.so
+%{_libdir}/libncbi_xdbapi_ftds.so
 %{_libdir}/libncbi_xdbapi_ftds100.so
 %{_libdir}/libncbi_xdbapi_ftds14.so
-%{_libdir}/libncbi_xdbapi_ftds.so
-%{_libdir}/libncbi_xloader_blastdb_rmt.so
 %{_libdir}/libncbi_xloader_blastdb.so
+%{_libdir}/libncbi_xloader_blastdb_rmt.so
 %{_libdir}/libncbi_xloader_cdd.so
 %{_libdir}/libncbi_xloader_genbank.so
 %{_libdir}/libncbi_xloader_lds2.so
 %{_libdir}/libncbi_xloader_patcher.so
+%{_libdir}/libncbi_xreader.so
 %{_libdir}/libncbi_xreader_cache.so
 %{_libdir}/libncbi_xreader_gicache.so
 %{_libdir}/libncbi_xreader_id1.so
 %{_libdir}/libncbi_xreader_id2.so
-%{_libdir}/libncbi_xreader_pubseqos2.so
 %{_libdir}/libncbi_xreader_pubseqos.so
-%{_libdir}/libncbi_xreader.so
+%{_libdir}/libncbi_xreader_pubseqos2.so
+%{_libdir}/libncbimime.so
 %{_libdir}/libnetstorage.so
 %{_libdir}/libobjcoords.so
 %{_libdir}/libobjprt.so
 %{_libdir}/libodbc_ftds100.so
 %{_libdir}/libomssa.so
-%{_libdir}/libpcassay2.so
 %{_libdir}/libpcassay.so
+%{_libdir}/libpcassay2.so
 %{_libdir}/libpcsubstance.so
 %{_libdir}/libpepXML.so
 %{_libdir}/libphytree_format.so
 %{_libdir}/libproj.so
 %{_libdir}/libprosplign.so
 %{_libdir}/libproteinkmer.so
-%{_libdir}/libpubmed.so
 %{_libdir}/libpub.so
+%{_libdir}/libpubmed.so
 %{_libdir}/libregexp.so
-%{_libdir}/libremapcli.so
 %{_libdir}/libremap.so
+%{_libdir}/libremapcli.so
 %{_libdir}/libsample_asn.so
 %{_libdir}/libscoremat.so
 %{_libdir}/libsdbapi.so
 %{_libdir}/libsearchbyrsid.so
+%{_libdir}/libseq.so
 %{_libdir}/libseqalign_util.so
 %{_libdir}/libseqcode.so
 %{_libdir}/libseqdb.so
 %{_libdir}/libseqedit.so
 %{_libdir}/libseqmasks_io.so
 %{_libdir}/libseqset.so
-%{_libdir}/libseq.so
 %{_libdir}/libseqsplit.so
 %{_libdir}/libseqtest.so
 %{_libdir}/libsequtil.so
@@ -1235,8 +1237,8 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_libdir}/libtest_dll.so
 %{_libdir}/libtest_mt.so
 %{_libdir}/libtinyseq.so
-%{_libdir}/libtrackmgrcli.so
 %{_libdir}/libtrackmgr.so
+%{_libdir}/libtrackmgrcli.so
 %{_libdir}/libuilist.so
 %{_libdir}/libutrtprof.so
 %{_libdir}/libuudutil.so
@@ -1249,27 +1251,27 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_libdir}/libxalgoalignnw.so
 %{_libdir}/libxalgoalignsplign.so
 %{_libdir}/libxalgoalignutil.so
-%{_libdir}/libxalgoblastdbindex_search.so
 %{_libdir}/libxalgoblastdbindex.so
+%{_libdir}/libxalgoblastdbindex_search.so
 %{_libdir}/libxalgocontig_assembly.so
 %{_libdir}/libxalgodustmask.so
 %{_libdir}/libxalgognomon.so
 %{_libdir}/libxalgophytree.so
 %{_libdir}/libxalgosegmask.so
-%{_libdir}/libxalgoseqqa.so
 %{_libdir}/libxalgoseq.so
+%{_libdir}/libxalgoseqqa.so
 %{_libdir}/libxalgotext.so
 %{_libdir}/libxalgovmerge.so
 %{_libdir}/libxalgowinmask.so
 %{_libdir}/libxaligncleanup.so
 %{_libdir}/libxalnmgr.so
 %{_libdir}/libxalntool.so
-%{_libdir}/libxblastformat.so
 %{_libdir}/libxblast.so
-%{_libdir}/libxcddalignview.so
+%{_libdir}/libxblastformat.so
 %{_libdir}/libxcd_utils.so
-%{_libdir}/libxcgi_redirect.so
+%{_libdir}/libxcddalignview.so
 %{_libdir}/libxcgi.so
+%{_libdir}/libxcgi_redirect.so
 %{_libdir}/libxcleanup.so
 %{_libdir}/libxcompress.so
 %{_libdir}/libxconnect.so
@@ -1288,15 +1290,15 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_libdir}/libxlogging.so
 %{_libdir}/libxmergetree.so
 %{_libdir}/libxncbi.so
-%{_libdir}/libxnetblastcli.so
 %{_libdir}/libxnetblast.so
+%{_libdir}/libxnetblastcli.so
 %{_libdir}/libxngalign.so
 %{_libdir}/libxobjedit.so
 %{_libdir}/libxobjimport.so
 %{_libdir}/libxobjmanip.so
 %{_libdir}/libxobjmgr.so
-%{_libdir}/libxobjreadex.so
 %{_libdir}/libxobjread.so
+%{_libdir}/libxobjreadex.so
 %{_libdir}/libxobjsimple.so
 %{_libdir}/libxobjutil.so
 %{_libdir}/libxobjwrite.so
@@ -1308,8 +1310,8 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 %{_libdir}/libxregexp_template_tester.so
 %{_libdir}/libxsd_sample_lib.so
 %{_libdir}/libxser.so
-%{_libdir}/libxsoap_server.so
 %{_libdir}/libxsoap.so
+%{_libdir}/libxsoap_server.so
 %{_libdir}/libxstruct_dp.so
 %{_libdir}/libxstruct_thread.so
 %{_libdir}/libxstruct_util.so
@@ -1326,6 +1328,7 @@ cd ../../include && find . -name .svn -prune -o -print | cpio -pd %{buildroot}/%
 
 %package devel
 Summary: Development files for %{name}
+BuildArch: noarch
 
 
 %description devel
@@ -7453,8 +7456,9 @@ This package contains the static libraries for %{name}.
 %{_libdir}/libtds_ftds14.a
 %{_libdir}/libtds_ut_common_ftds14.a
 
-
 %changelog
+* Sun Nov 23 2025 Andrew Tapia <andrew.tapia@uky.edu> - 29.6.0-3
+- Fix RPATH problems.
 * Thu Nov 20 2025 Andrew Tapia <andrew.tapia@uky.edu> - 29.6.0-2
 - Move static libraries to new static subpackage.
 * Fri Oct 10 2025 Andrew Tapia <andrew.tapia@uky.edu> - 29.6.0-1
