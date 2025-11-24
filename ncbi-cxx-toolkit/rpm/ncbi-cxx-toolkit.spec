@@ -11,6 +11,7 @@ Patch0:         ncbi-cxx-toolkit-parallel-cmake.patch
 Patch1:         ncbi-cxx-toolkit-custom-dirname-archive.patch
 Patch2:         ncbi-cxx-toolkit-cmake-atomic-lib.patch
 Patch3:         ncbi-cxx-toolkit-32bit-f_type.patch
+Patch4:         ncbi-cxx-toolkit-no-rpath-use-link-path.patch
 
 AutoReqProv: no
 
@@ -57,7 +58,7 @@ echo prefix %{_prefix}
 echo toolchain_arg %{toolchain_arg}
 echo zcf_disabled %{zcf_disabled}
 scl enable gcc-toolset-14 - <<EOF
-    bash cmake-configure --with-dll --with-install=%{_prefix} --with-features=BinRelease -DNCBI_DIRNAME_ARCHIVE=%{_lib} -DNCBI_COMPONENT_LocalZCF_DISABLED=%{zcf_disabled} %{toolchain_arg};
+    bash cmake-configure --with-dll --with-install=%{_prefix} -DNCBI_DIRNAME_ARCHIVE=%{_lib} -DNCBI_COMPONENT_LocalZCF_DISABLED=%{zcf_disabled} %{toolchain_arg};
      cd CMake*/build;
      %make_build;
 EOF

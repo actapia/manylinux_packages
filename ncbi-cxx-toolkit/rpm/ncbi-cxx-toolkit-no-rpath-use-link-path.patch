@@ -1,0 +1,12 @@
+diff -ruaN ncbi-cxx-toolkit-public-release-29.6.0/src/build-system/cmake/CMakeChecks.compiler.cmake ncbi-cxx-toolkit-public-release-29.6.0-new/src/build-system/cmake/CMakeChecks.compiler.cmake
+--- ncbi-cxx-toolkit-public-release-29.6.0/src/build-system/cmake/CMakeChecks.compiler.cmake	2025-09-30 02:46:23.000000000 -0400
++++ ncbi-cxx-toolkit-public-release-29.6.0-new/src/build-system/cmake/CMakeChecks.compiler.cmake	2025-11-24 09:17:18.897306007 -0500
+@@ -756,7 +756,7 @@
+ 
+ # add the automatically determined parts of the RPATH
+ # which point to directories outside the build tree to the install RPATH
+-    SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
++    SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+     if(BinRelease IN_LIST NCBI_PTBCFG_PROJECT_FEATURES)
+         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+         set(CMAKE_INSTALL_REMOVE_ENVIRONMENT_RPATH TRUE)
