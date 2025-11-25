@@ -1,6 +1,6 @@
 Name:           ncbi-cxx-toolkit
 Version:        29.6.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Bioinformatics libraries for C++ from NCBI
 
 License:        Public Domain
@@ -27,7 +27,7 @@ BuildRequires:  ncbi-cxx-toolkit, cross-gcc-common
 BuildRequires:  gcc-toolset-14-gcc, gcc-toolset-14-gcc-c++, gcc-toolset-14-libstdc++-devel, pcre-devel, bzip2-devel, zlib-devel, libzstd-devel, boost-devel, sqlite-libs, sqlite-devel, lmdb-devel
 %endif
 
-Requires:       pcre, bzip2, bzip2-libs, zstd, sqlite-libs, glibc, libgcc, libgomp, libstdc++, libzstd, zlib, lmdb-libs
+Requires:       pcre, bzip2, bzip2-libs, zstd, sqlite-libs, glibc, libgcc, libgomp, libstdc++, libzstd, zlib, lmdb-libs, sqlite
 
 %define _prefix /opt/ncbi-cxx-toolkit-%{version}
 
@@ -7457,6 +7457,8 @@ This package contains the static libraries for %{name}.
 %{_libdir}/libtds_ut_common_ftds14.a
 
 %changelog
+* Tue Nov 25 2025 Andrew Tapia <andrew.tapia@uky.edu> - 29.6.0-4
+- Add missing sqlite dependency.
 * Sun Nov 23 2025 Andrew Tapia <andrew.tapia@uky.edu> - 29.6.0-3
 - Fix RPATH problems.
 * Thu Nov 20 2025 Andrew Tapia <andrew.tapia@uky.edu> - 29.6.0-2
