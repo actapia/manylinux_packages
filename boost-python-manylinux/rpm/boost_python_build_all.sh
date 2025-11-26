@@ -67,5 +67,4 @@ if ! [ python.configured ]
 EOF
     ./b2 stage --clean
     ./b2 stage --with-python --python-buildid="$version" link=shared variant=debug hardcode-dll-paths=true dll-path="'\$ORIGIN/../$lib_dir'"
-    break
 done
