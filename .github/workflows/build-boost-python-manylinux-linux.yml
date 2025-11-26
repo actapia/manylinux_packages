@@ -68,7 +68,7 @@ jobs:
       key-email: andrew.tapia@uky.edu
       key-name: Andrew Tapia
       package-name: boost-python-manylinux
-      runner: ${{matrix.runner}}
+      runner: ubuntu-latest
       container: ${{matrix.container}}
       binfmt_arch:  ${{matrix.binfmt_arch}}
       architecture: ${{matrix.architecture}}
