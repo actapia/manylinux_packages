@@ -76,5 +76,6 @@ jobs:
       binfmt_arch:  ${{matrix.binfmt_arch}}
       package_arch: ${{matrix.package_arch}}
       architecture: ${{matrix.architecture}}
+      native: false
       download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
     secrets: inherit
