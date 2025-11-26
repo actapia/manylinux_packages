@@ -57,15 +57,12 @@ jobs:
         include:
           - architecture: ppc64le
             binfmt_arch: ppc64le
-            package_arch: powerpc64le            
             container: quay.io/pypa/manylinux_2_28_ppc64le
           - architecture: s390x
             binfmt_arch: s390x
-            package_arch: s390x
             container: quay.io/pypa/manylinux_2_28_s390x
           - architecture: i386
             binfmt_arch: 386
-            package_arch: x86_64
             container: quay.io/pypa/manylinux_2_28_i686
     with:
       key-email: andrew.tapia@uky.edu
@@ -74,7 +71,6 @@ jobs:
       runner: ${{matrix.runner}}
       container: ${{matrix.container}}
       binfmt_arch:  ${{matrix.binfmt_arch}}
-      package_arch: ${{matrix.package_arch}}
       architecture: ${{matrix.architecture}}
       native: false
       download: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
