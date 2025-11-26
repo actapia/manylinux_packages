@@ -1,6 +1,6 @@
 Name:           boost-python-manylinux
 Version:        1.89.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Boost C++ library for building Python extensions
 
 License:        Boost
@@ -8122,6 +8122,8 @@ This package contains the C++ header files for %{name}.
 %{_includedir}/boost/token_functions.hpp
 
 %changelog
+* Wed Nov 26 2025 Andrew Tapia <andrew.tapia@uky.edu> - 1.89.0-3
+- Fix RPATH.
 * Wed Nov 19 2025 Andrew Tapia <andrew.tapia@uky.edu> - 1.89.0-2
 - Include missing utility libraries.
 * Wed Oct 15 2025 Andrew Tapia <andrew.tapia@uky.edu> - 1.89.0-1
