@@ -25,31 +25,29 @@ base_versions["pp311-pypy311_pp73"]="3.11"
 extended_versions["pp311-pypy311_pp73"]="3.11"
 python_strings["pp311-pypy311_pp73"]="pypy"
 show_versions=false
+pos=()
 while [ "$#" -gt 0 ]; do
     case "$1" in
 	"--show-versions")
 	    show_versions=true
 	    ;;
 	*)
-	    if ! [[ -v boost_dir ]]; then
-		boost_dir="$1"
-	    else
-		>&2 echo "Cannot provide more than one directory."
-		exit 1
-	    fi
+	    pos+=("$1")
 	    ;;
     esac
     shift
 done
+if [ "${#pos[@]}" -ne 2 ]; then
+    >&2 echo "This script requires exactly two positional arguments."
+    exit 1
+fi
+boost_dir="${pos[0]}"
+lib_dir="${pos[1]}"
 if [ "$show_versions" = true ]; then
     for version in "${!base_versions[@]}"; do
 	echo "version $version: ${base_versions[$version]}, ${extended_versions[$version]}, ${python_strings[$version]}"
     done
     exit 0
-fi
-if ! [[ -v boost_dir ]]; then
-    >&2 echo "Must provide a boost source directory."
-    exit 1
 fi
 set -x
 cd "$boost_dir"
@@ -68,5 +66,6 @@ if ! [ python.configured ]
 }
 EOF
     ./b2 stage --clean
-    ./b2 stage --with-python --python-buildid="$version" link=shared variant=debug
+    ./b2 stage --with-python --python-buildid="$version" link=shared variant=debug hardcode-dll-paths=true dll-path="'\$ORIGIN/../$lib_dir'"
+    break
 done

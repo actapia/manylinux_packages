@@ -23,7 +23,7 @@ cp %{_topdir}/SOURCES/boost_python_build_all.sh .
 
 
 %build
-bash boost_python_build_all.sh .
+bash boost_python_build_all.sh . %{_lib}
 mkdir -p ../include_root/
 dist/bin/bcp python utility ../include_root/
 
