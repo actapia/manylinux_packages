@@ -56,6 +56,11 @@ cd "$boost_dir"
 mv project-config.jam project-config.jam.generic
 for version in "${!base_versions[@]}"; do
     echo "version $version: ${base_versions[$version]}, ${extended_versions[$version]}"
+    if /opt/python/$version/bin/python -c 'import sys; sys.exit(not sys._is_gil_enabled())'; then
+	have_gil="define=Py_GIL_DISABLED"
+    else
+	have_gil=
+    fi
     sed '/^project.*;$/r /dev/stdin' project-config.jam.generic > project-config.jam <<EOF
 
 # Python configuration
@@ -66,5 +71,5 @@ if ! [ python.configured ]
 }
 EOF
     ./b2 stage --clean
-    ./b2 stage --with-python --python-buildid="$version" link=shared variant=debug hardcode-dll-paths=true dll-path="'\$ORIGIN/../$lib_dir'"
+    ./b2 stage --with-python --python-buildid="$version" link=shared variant=debug hardcode-dll-paths=true dll-path="'\$ORIGIN/../$lib_dir'" $have_gil
 done
