@@ -1,29 +1,17 @@
 #!/usr/bin/bash
+function find_dep {
+    shopt -s nullglob
+    toolkits=("$1"*"$3")
+    if [ "${#toolkits[@]}" -lt 1 ]; then
+	>&2 echo "Could not find $2. Was it installed?"
+	exit 1
+    elif [ "${#toolkits[@]}" -gt 1 ]; then
+	>&2 echo "Multiple $2 installations found. Refusing to pick."
+	exit 1
+    fi
+    echo "${toolkits[0]}"
+}
 set -e
-declare -A base_versions
-declare -A extended_versions
-declare -A python_strings
-# CPython
-MIN_CPYTHON3_VERSION=8
-MAX_CPYTHON3_VERSION=14
-MIN_CPYTHON3T_VERSION=13
-MAX_CPYTHON3T_VERSION=14
-for ((v="$MIN_CPYTHON3_VERSION";v<="$MAX_CPYTHON3_VERSION";v++)); do
-    version_string="cp3$v-cp3$v"
-    base_versions["$version_string"]="3.$v"
-    extended_versions["$version_string"]="3.$v"
-    python_strings["$version_string"]="python"
-done
-for ((v="$MIN_CPYTHON3T_VERSION";v<="$MAX_CPYTHON3T_VERSION";v++)); do
-    version_string="cp3$v-cp3${v}t"
-    base_versions["$version_string"]="3.$v"
-    extended_versions["$version_string"]="3.${v}t"
-    python_strings["$version_string"]="python"
-done
-# PyPy
-base_versions["pp311-pypy311_pp73"]="3.11"
-extended_versions["pp311-pypy311_pp73"]="3.11"
-python_strings["pp311-pypy311_pp73"]="pypy"
 show_versions=false
 pos=()
 while [ "$#" -gt 0 ]; do
@@ -43,27 +31,35 @@ if [ "${#pos[@]}" -ne 2 ]; then
 fi
 boost_dir="${pos[0]}"
 lib_dir="${pos[1]}"
-if [ "$show_versions" = true ]; then
-    for version in "${!base_versions[@]}"; do
-	echo "version $version: ${base_versions[$version]}, ${extended_versions[$version]}, ${python_strings[$version]}"
-    done
-    exit 0
-fi
-set -x
 cd "$boost_dir"
-./bootstrap.sh
-./b2 tools/bcp
-mv project-config.jam project-config.jam.generic
+if [ "$show_versions" = false ]; then
+    set -x
+    ./bootstrap.sh
+    ./b2 tools/bcp
+    mv project-config.jam project-config.jam.generic
+fi
 build_dir="mybuild"
-for version in "${!base_versions[@]}"; do
+for pydir in /opt/python/*; do
     # if ! [[ $version =~ ^cp313-cp313 ]]; then
     # 	continue
-    # fi    
-    echo "version $version: ${base_versions[$version]}, ${extended_versions[$version]}"
+    # fi
+    version="$(basename "$pydir")"
+    base_version="$("$pydir"/bin/python -c \
+        'import sys; print(".".join(map(str,sys.version_info[:2])))'
+    )"    
+    echo "version $version: $base_version"
     if /opt/python/$version/bin/python -c 'import sys; sys.exit(not sys._is_gil_enabled())'; then
 	have_gil=
     else
 	have_gil="define=Py_GIL_DISABLED"
+    fi
+    python_include="$(find_dep "$pydir"/include/ "$version_name include dir" /)"
+    python_lib="$(find_dep "$pydir"/lib/py "$version_name lib dir" /)"
+    if [ "$show_versions" = true ]; then
+	echo "include: $python_include"
+	echo "lib: $python_lib"
+	echo "------------------------------"
+	continue
     fi
     sed '/^project.*;$/r /dev/stdin' project-config.jam.generic > project-config.jam <<EOF
 
@@ -71,7 +67,7 @@ for version in "${!base_versions[@]}"; do
 import python ;
 if ! [ python.configured ]
 {
-    using python : "${base_versions[$version]}" : "/opt/python/$version/bin/python" :  "/opt/python/$version/include/${python_strings[$version]}${extended_versions[$version]}" : "/opt/python/$version/lib/${python_strings[$version]}${extended_versions[$version]}" ;
+    using python : "$base_version" : "/opt/python/$version/bin/python" :  "$python_include" : "$python_lib" ;
 }
 EOF
     ./b2 stage --clean-all --build-dir="$build_dir"
