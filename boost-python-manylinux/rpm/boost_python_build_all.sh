@@ -54,12 +54,16 @@ cd "$boost_dir"
 ./bootstrap.sh
 ./b2 tools/bcp
 mv project-config.jam project-config.jam.generic
+build_dir="mybuild"
 for version in "${!base_versions[@]}"; do
+    # if ! [[ $version =~ ^cp313-cp313 ]]; then
+    # 	continue
+    # fi    
     echo "version $version: ${base_versions[$version]}, ${extended_versions[$version]}"
     if /opt/python/$version/bin/python -c 'import sys; sys.exit(not sys._is_gil_enabled())'; then
-	have_gil="define=Py_GIL_DISABLED"
-    else
 	have_gil=
+    else
+	have_gil="define=Py_GIL_DISABLED"
     fi
     sed '/^project.*;$/r /dev/stdin' project-config.jam.generic > project-config.jam <<EOF
 
@@ -70,6 +74,7 @@ if ! [ python.configured ]
     using python : "${base_versions[$version]}" : "/opt/python/$version/bin/python" :  "/opt/python/$version/include/${python_strings[$version]}${extended_versions[$version]}" : "/opt/python/$version/lib/${python_strings[$version]}${extended_versions[$version]}" ;
 }
 EOF
-    ./b2 stage --clean
-    ./b2 stage --with-python --python-buildid="$version" link=shared variant=debug hardcode-dll-paths=true dll-path="'\$ORIGIN/../$lib_dir'" $have_gil
+    ./b2 stage --clean-all --build-dir="$build_dir"
+    rm -rf "$build_dir"
+    ./b2 stage --with-python --build-dir="$build_dir" --python-buildid="$version" link=shared variant=debug hardcode-dll-paths=true dll-path="'\$ORIGIN/../$lib_dir'" $have_gil
 done
