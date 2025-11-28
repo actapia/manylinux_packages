@@ -48,7 +48,6 @@ cp -r ../include_root/boost %{buildroot}%{_includedir}
 %{_libdir}/libboost_python310-cp310-cp310.so.1.89.0
 %{_libdir}/libboost_python314-cp314-cp314.so.1.89.0
 %{_libdir}/libboost_python313-cp313-cp313t.so.1.89.0
-%{_libdir}/libboost_python311-pp311-pypy311_pp73.so.1.89.0
 %{_libdir}/libboost_python314-cp314-cp314t.so
 %{_libdir}/libboost_container.so.1.89.0
 %{_libdir}/libboost_graph.so.1.89.0
@@ -57,7 +56,10 @@ cp -r ../include_root/boost %{buildroot}%{_includedir}
 %{_libdir}/libboost_python39-cp39-cp39.so.1.89.0
 %{_libdir}/libboost_python311-cp311-cp311.so
 %{_libdir}/libboost_container.so
+%ifarch x86_64 aarch64 i686
+%{_libdir}/libboost_python311-pp311-pypy311_pp73.so.1.89.0
 %{_libdir}/libboost_python311-pp311-pypy311_pp73.so
+%endif
 %{_libdir}/libboost_python38-cp38-cp38.so
 %{_libdir}/libboost_python314-cp314-cp314.so
 %{_libdir}/libboost_python311-cp311-cp311.so.1.89.0
