@@ -26,8 +26,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: true
+
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
         
       - name: Install rpm build tools
         run: dnf -y install rpm-build rpm-devel rpmdevtools git rpm-sign
