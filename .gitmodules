@@ -2,3 +2,6 @@
 	path = homebrew-cibuildwheel_packages
 	url = https://github.com/actapia/homebrew-cibuildwheel_packages
 	branch = main
+[submodule "upstream/debugedit"]
+	path = upstream/debugedit
+	url = https://src.fedoraproject.org/rpms/debugedit/

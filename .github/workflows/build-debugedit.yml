@@ -1,0 +1,153 @@
+name: build-debugedit
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+
+      download:
+        type: boolean
+        description: "Download to RPM repo"
+        required: false
+        default: true
+
+env:
+  KEY_NAME: "Andrew Tapia"
+  KEY_EMAIL: "andrew.tapia@uky.edu"
+
+jobs:  
+  build-srpm:
+    runs-on: ubuntu-latest
+    container: almalinux/8-base
+
+    steps:
+      - uses: actions/checkout@v5
+        
+      - name: Install rpm build tools
+        run: dnf -y install rpm-build rpm-devel rpmdevtools git rpm-sign
+
+      - name: Add GPG key
+        run: echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import
+
+      - name: Export public key
+        run: gpg --export -a "$KEY_EMAIL" > public.asc
+
+      - name: Import public key for signing
+        run: rpm --import public.asc
+
+      - name: Build rpm buildtree
+        working-directory: /github/home
+        run: rpmdev-setuptree
+
+      - name: Copy spec and patch files
+        run: |
+          cp debugedit/rpm/*.spec /github/home/rpmbuild/SPECS
+          cp debugedit/rpm/*.patch /github/home/rpmbuild/SOURCES
+
+      - name: Download source
+        run:  spectool -g -R /github/home/rpmbuild/SPECS/debugedit.spec
+        
+      - name: Build SRPM
+        run: rpmbuild -bs /github/home/rpmbuild/SPECS/debugedit.spec
+
+      - name: Sign SRPM
+        run: >
+          rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
+          --addsign /github/home/rpmbuild/SRPMS/debugedit*.src.rpm
+
+      - name: Upload SRPM
+        id: artifact-upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: srpm
+          path: /github/home/rpmbuild/SRPMS/debugedit*.src.rpm
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+          
+      - name: Download to RPM repo
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}
+        run: >
+          curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          https://www.cs.uky.edu/~acta225/ci_get/get.php
+          -d "repo=${{github.repository}}"
+          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"
+
+  build-binary:
+    runs-on: ubuntu-latest
+    needs: [build-srpm]
+    container: almalinux/8-base
+    steps:
+      - name: Install DNF plugins
+        run: dnf -y install dnf-plugins-core
+        
+      - name: Enable powertools
+        run: dnf config-manager --set-enabled powertools
+
+      - name: Install EPEL
+        run: dnf -y install epel-release
+        
+      - name: Install rpm build tools
+        run: >
+          dnf -y install rpm-build rpm-devel rpmdevtools git
+          'dnf-command(builddep)' rpm-sign
+
+      - name: Add GPG key
+        run: echo ${{ secrets.SIGNING_KEY }} | base64 --decode | gpg --import
+
+      - name: Export public key
+        run: gpg --export -a "$KEY_EMAIL" > public.asc
+
+      - name: Import public key for signing
+        run: rpm --import public.asc
+        
+      - name: Build rpm buildtree
+        working-directory: /github/home
+        run: rpmdev-setuptree
+
+      - name: Download SRPM
+        uses: actions/download-artifact@v5
+        with:
+          name: srpm
+          path: /github/home/rpmbuild/SRPMS
+
+      - name: Install build dependencies
+        run: |
+          dnf -y builddep /github/home/rpmbuild/SRPMS/*.src.rpm
+          dnf -y install make
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}      
+
+      - name: Build binary RPM
+        run: >
+          rpmbuild --rebuild /github/home/rpmbuild/SRPMS/*.src.rpm
+
+      - name: Sign SRPM
+        run: >
+          find /github/home/rpmbuild/RPMS/ -name '*.rpm' -exec
+          rpm --define "_gpg_name $KEY_NAME <$KEY_EMAIL>"
+          --addsign {} \;
+
+      - name: Upload RPMs
+        id: artifact-upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpm
+          path: /github/home/rpmbuild/RPMS/
+          if-no-files-found: error
+          retention-days: 1
+          overwrite: true
+
+      - name: Download to RPM repo
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.download }}  
+        run: >
+          curl -f -G -u "ci:${{secrets.CI_GET_PASSWORD}}"
+          https://www.cs.uky.edu/~acta225/ci_get/get.php
+          -d "repo=${{github.repository}}"
+          -d "artifactId=${{steps.artifact-upload.outputs.artifact-id}}"

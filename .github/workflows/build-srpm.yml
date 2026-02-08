@@ -18,11 +18,14 @@ on:
       download:
         default: true
         type: boolean
+      container:
+        default: quay.io/pypa/manylinux_2_28_x86_64
+        type: string
 
 jobs:
   build-srpm:
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64
+    container: ${{inputs.container}}
 
     steps:
       - uses: actions/checkout@v5
@@ -45,9 +48,9 @@ jobs:
 
       - name: Copy spec and patch files
         run: >          
-          cp ${{inputs.package-name}}/rpm/*.spec /github/home/rpmbuild/SPECS;
+          cp -L ${{inputs.package-name}}/rpm/*.spec /github/home/rpmbuild/SPECS;
           shopt -s extglob;
-          eval "cp ${{inputs.package-name}}/rpm/!(*.spec)
+          eval "cp -L ${{inputs.package-name}}/rpm/!(*.spec)
           /github/home/rpmbuild/SOURCES;"
           shopt -u extglob;
 

@@ -1,0 +1,1 @@
+../../upstream/debugedit/debugedit.spec
