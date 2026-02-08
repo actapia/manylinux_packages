@@ -26,6 +26,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          submodules: true
         
       - name: Install rpm build tools
         run: dnf -y install rpm-build rpm-devel rpmdevtools git rpm-sign
@@ -45,8 +47,8 @@ jobs:
 
       - name: Copy spec and patch files
         run: |
-          cp debugedit/rpm/*.spec /github/home/rpmbuild/SPECS
-          cp debugedit/rpm/*.patch /github/home/rpmbuild/SOURCES
+          cp -L debugedit/rpm/*.spec /github/home/rpmbuild/SPECS
+          cp -L debugedit/rpm/*.patch /github/home/rpmbuild/SOURCES
 
       - name: Download source
         run:  spectool -g -R /github/home/rpmbuild/SPECS/debugedit.spec
