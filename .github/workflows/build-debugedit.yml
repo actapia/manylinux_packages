@@ -51,7 +51,10 @@ jobs:
       - name: Copy spec and patch files
         run: |
           cp -L debugedit/rpm/*.spec /github/home/rpmbuild/SPECS
-          cp -L debugedit/rpm/*.patch /github/home/rpmbuild/SOURCES
+          shopt -s extglob;
+          eval "cp -L debugedit/rpm/!(*.spec)
+          /github/home/rpmbuild/SOURCES;"
+          shopt -u extglob;  
 
       - name: Download source
         run:  spectool -g -R /github/home/rpmbuild/SPECS/debugedit.spec
