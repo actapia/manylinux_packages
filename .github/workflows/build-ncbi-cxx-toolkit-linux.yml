@@ -284,6 +284,16 @@ jobs:
           sudo podman exec ${{env.native_container_id}}
           dnf -y install gcc-${{matrix.package_arch}}-linux-gnu
           gcc-c++-${{matrix.package_arch}}-linux-gnu
+
+      - name: Install updated debugedit
+        run: >
+          sudo podman exec ${{env.native_container_id}}
+          dnf -y install debugedit
+
+      - name: Replace RPM debugedit
+        run: >
+          sudo podman exec ${{env.native_container_id}}
+          cp /usr/bin/debugedit /usr/lib/rpm/debugedit          
         
       - name: Install build dependencies on native container
         run: >
