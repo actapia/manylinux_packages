@@ -49,7 +49,7 @@ jobs:
         run: rpmdev-setuptree
 
       - name: Copy spec and patch files
-        run: |
+        run: >          
           cp -L debugedit/rpm/*.spec /github/home/rpmbuild/SPECS
           shopt -s extglob;
           eval "cp -L debugedit/rpm/!(*.spec)
