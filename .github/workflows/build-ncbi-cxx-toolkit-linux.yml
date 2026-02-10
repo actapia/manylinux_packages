@@ -317,7 +317,8 @@ jobs:
           export PATH="$td:$PATH";
           rpmbuild --target ${{matrix.target_arch}}-redhat-linux --rebuild
           /root/rpmbuild/SRPMS/ncbi-cxx-toolkit*.src.rpm --define
-          "cmake_toolchain /root/toolchain.cmake";'
+          "cmake_toolchain /root/toolchain.cmake" --define
+          "__strip /usr/bin/${{matrix.proc_arch}}-linux-gnu-strip";'
 
       - name: Sign RPMs
         run: >
